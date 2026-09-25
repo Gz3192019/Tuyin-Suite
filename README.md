@@ -4,7 +4,7 @@
 
 ![platform](https://img.shields.io/badge/Platform-Android%207.0%2B-3DDC84)
 ![lang](https://img.shields.io/badge/Language-Kotlin%20%2B%20Compose-7F52FF)
-![license](https://img.shields.io/badge/License-GPL--3.0-or--later-blue)
+![license](https://img.shields.io/badge/License-GPL--3.0--or--later-blue)
 
 图隐套件是一个把 **RAC 图隐 / 幻影坦克 / 光棱坦克 / 图片混淆** 四类图片隐写与混淆算法整合进一个原生 Android 应用的聚合项目。所有处理均在本地完成，图片不会上传到任何服务器。
 
