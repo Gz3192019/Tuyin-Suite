@@ -1,0 +1,1805 @@
+<!DOCTYPE html>
+<html lang="zh-CN" style="margin:0;padding:0;">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>图隐套件 · 四合一图片隐写工作台</title>
+<link rel="icon" href='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="%230086FF"/><text x="32" y="46" font-size="38" font-weight="bold" fill="white" text-anchor="middle" font-family="sans-serif">隐</text></svg>'>
+<style>
+  :root{
+    --bg:#F7F6F2; --card:#FFFFFF; --primary:#0086FF; --text:#1A1A1A; --sub:#6B7280;
+    --line:#E4E0D8; --seg-bg:#EFEDE8; --danger:#E5484D; --ok:#0086FF;
+    --radius:16px; --shadow:0 6px 20px rgba(15,23,42,.06);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:var(--bg);color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei","PingFang SC",sans-serif;
+    -webkit-font-smoothing:antialiased}
+  body{padding:0 16px 60px}
+  /* ---------- 头部 ---------- */
+  header.app{max-width:760px;margin:0 auto;padding:26px 4px 14px;position:relative}
+  header.app .logo-row{display:flex;align-items:center;gap:12px;margin-bottom:8px}
+  header.app .logo{width:46px;height:46px;border-radius:14px;background:linear-gradient(135deg,#0086FF,#3D5AFE);
+    color:#fff;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:900;
+    box-shadow:0 6px 18px rgba(0,134,255,.35);flex:none}
+  header.app h1{font-size:24px;font-weight:800;letter-spacing:.5px;line-height:1.2}
+  header.app h1 .accent{color:var(--primary)}
+  header.app .badge{display:inline-block;vertical-align:middle;margin-left:8px;font-size:10px;font-weight:800;
+    color:#0086FF;background:rgba(0,134,255,.12);border:1px solid rgba(0,134,255,.25);
+    padding:2px 8px;border-radius:999px;letter-spacing:.5px}
+  header.app p{font-size:13px;color:var(--sub);margin-top:4px;line-height:1.7;max-width:600px}
+  header.app p b{color:var(--text);font-weight:700}
+  /* ---------- Tab 导航 ---------- */
+  nav.tabs{max-width:760px;margin:0 auto 16px;display:flex;gap:8px;flex-wrap:wrap;
+    position:sticky;top:10px;z-index:50;padding:6px;border-radius:22px;
+    background:rgba(255,255,255,.82);box-shadow:var(--shadow);backdrop-filter:blur(12px)}
+  nav.tabs .tab{flex:1;min-width:130px;text-align:center;padding:10px 8px;border-radius:16px;
+    font-size:14px;font-weight:700;color:var(--sub);cursor:pointer;user-select:none;
+    transition:all .18s ease;border:none;background:transparent;font-family:inherit}
+  nav.tabs .tab.active{background:color-mix(in srgb, var(--primary) 14%, white);color:var(--primary)}
+  /* ---------- 主容器 ---------- */
+  main{max-width:760px;margin:0 auto}
+  section.view{display:none}
+  section.view.active{display:block;animation:fade .25s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  /* ---------- 卡片 ---------- */
+  .card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);
+    padding:16px;margin-bottom:14px;border:1px solid rgba(228,224,216,.55);transition:box-shadow .2s ease}
+  .card:hover{box-shadow:0 10px 28px rgba(15,23,42,.1)}
+  .card h3{font-size:15px;font-weight:800;display:flex;align-items:center;gap:8px}
+  .card h3 .tile{width:34px;height:34px;border-radius:10px;background:#2B2B2B;color:#fff;
+    display:inline-flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;flex:none}
+  .card .hint{font-size:12px;color:var(--sub);margin-top:3px;line-height:1.5}
+  .card .meta{margin-top:6px;font-size:12px;color:var(--sub)}
+  .card details.more{margin-top:10px;font-size:12px}
+  .card details.more summary{cursor:pointer;color:var(--primary);font-weight:700;user-select:none;
+    padding:6px 0;list-style:none}
+  .card details.more summary::-webkit-details-marker{display:none}
+  .card details.more summary::before{content:'▸ ';display:inline-block;transition:transform .15s}
+  .card details.more[open] summary::before{transform:rotate(90deg)}
+  .card details.more[open]{border-top:1px dashed var(--line);margin-top:10px;padding-top:10px}
+  /* ---------- 上传卡 ---------- */
+  .drop{position:relative;border:2px dashed var(--line);border-radius:14px;background:#FAFAF7;
+    min-height:120px;display:flex;align-items:center;justify-content:center;cursor:pointer;
+    overflow:hidden;transition:border-color .15s, background .15s}
+  .drop:hover{border-color:var(--primary);background:#F2F9FF}
+  .drop input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer}
+  .drop .ph{text-align:center;color:var(--sub);pointer-events:none;padding:18px}
+  .drop .ph b{display:block;font-size:15px;color:var(--text);margin-bottom:4px}
+  .drop .ph span{font-size:12px}
+  .drop canvas,.drop img{max-width:100%;max-height:280px;object-fit:contain;pointer-events:none}
+  .drop.filled{border-style:solid;border-color:rgba(0,134,255,.35);background:#fff}
+  /* ---------- 表单控件 ---------- */
+  .row{display:flex;align-items:center;gap:10px;margin-top:10px}
+  .row .lab{font-size:13px;color:var(--sub);flex:1;min-width:0}
+  .row .val{font-size:13px;font-weight:800;color:var(--primary);white-space:nowrap}
+  input[type=range]{flex:2;-webkit-appearance:none;appearance:none;height:6px;border-radius:3px;
+    background:linear-gradient(90deg,var(--primary) var(--fill,50%),var(--seg-bg) var(--fill,50%));
+    outline:none}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;
+    background:#fff;border:2.5px solid var(--primary);box-shadow:0 2px 6px rgba(0,134,255,.35);cursor:pointer}
+  select, input[type=number], input[type=text]{
+    border:1px solid var(--line);background:#fff;border-radius:10px;padding:9px 12px;
+    font-size:13px;color:var(--text);font-family:inherit;outline:none;min-width:0}
+  select:focus, input:focus{border-color:var(--primary)}
+  .field{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+  .field input{flex:1;min-width:90px}
+  /* ---------- 按钮 ---------- */
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:none;
+    border-radius:999px;padding:12px 22px;font-size:14px;font-weight:800;cursor:pointer;
+    font-family:inherit;transition:transform .12s, opacity .12s;user-select:none}
+  .btn:active{transform:scale(.97)}
+  .btn.primary{background:var(--primary);color:#fff;box-shadow:0 6px 16px rgba(0,134,255,.28)}
+  .btn.ghost{background:#fff;color:var(--primary);border:1px solid var(--primary)}
+  .btn.plain{background:#fff;color:var(--sub);border:1px solid var(--line)}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+  .btnrow{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
+  .btnrow .btn{flex:1;min-width:110px}
+  .btnrow .btn:only-child{flex:1 1 100%}
+  /* ---------- 进度条 ---------- */
+  .progress{height:8px;border-radius:4px;background:var(--seg-bg);overflow:hidden;margin-top:10px}
+  .progress i{display:block;height:100%;width:0%;border-radius:4px;background:var(--primary);
+    transition:width .2s ease}
+  .status{font-size:12px;color:var(--sub);margin-top:8px;line-height:1.5;word-break:break-all}
+  .status.ok{color:var(--ok)} .status.err{color:var(--danger)}
+  /* ---------- 预览 ---------- */
+  .preview{position:relative;margin-top:12px;border-radius:12px;overflow:hidden;min-height:60px;
+    display:flex;align-items:center;justify-content:center;background:repeating-conic-gradient(#eee 0 25%,#fff 0 50%) 0 0/18px 18px}
+  .preview canvas,.preview img{max-width:100%;max-height:340px;display:block}
+  .preview .empty{font-size:12px;color:var(--sub);padding:22px}
+  .seg{display:inline-flex;gap:4px;padding:4px;background:var(--seg-bg);border-radius:12px;margin-top:10px}
+  .seg button{border:none;background:transparent;border-radius:9px;padding:7px 14px;font-size:12px;
+    font-weight:700;color:var(--sub);cursor:pointer;font-family:inherit}
+  .seg button.on{background:#fff;color:var(--primary);box-shadow:0 2px 6px rgba(15,23,42,.1)}
+  /* ---------- 子面板 ---------- */
+  .sub{display:none}
+  .sub.active{display:block}
+  .foot{max-width:760px;margin:18px auto 0;text-align:center;font-size:11px;color:#9CA3AF;line-height:1.7}
+  a{color:var(--primary);text-decoration:none}
+  /* ---------- 致敬区 ---------- */
+  .tribute{max-width:760px;margin:26px auto 0;padding-top:20px;border-top:1px solid var(--line)}
+  .tribute h2{font-size:18px;font-weight:800;margin-bottom:6px}
+  .tribute h2::before{content:'♥';color:#E5484D;margin-right:8px}
+  .tribute .t-sub{font-size:12px;color:var(--sub);margin-bottom:14px}
+  .t-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .t-card{display:block;background:var(--card);border:1px solid rgba(228,224,216,.6);border-radius:14px;
+    padding:12px 14px;text-decoration:none;color:var(--text);box-shadow:0 3px 10px rgba(15,23,42,.05);
+    transition:transform .15s ease, box-shadow .15s ease}
+  .t-card:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(15,23,42,.1)}
+  .t-card .t-tag{display:inline-block;font-size:10px;font-weight:800;color:#fff;background:var(--primary);
+    padding:2px 8px;border-radius:999px;margin-bottom:7px}
+  .t-card b{display:block;font-size:14px;margin-bottom:4px}
+  .t-card i{display:block;font-size:11px;color:var(--sub);font-style:normal;line-height:1.5}
+  .foot{max-width:760px;margin:16px auto 0;text-align:center;font-size:11px;color:#9CA3AF;line-height:1.7}
+  @media (max-width:640px){ .t-grid{grid-template-columns:repeat(2,1fr)} }
+  @media (max-width:560px){
+    header.app h1{font-size:19px}
+    nav.tabs .tab{min-width:0;padding:9px 4px;font-size:13px}
+    .card{padding:14px}
+    .t-grid{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+
+<header class="app">
+  <div class="logo-row">
+    <div class="logo">隐</div>
+    <div>
+      <h1>图隐套件 <span class="accent">·</span> 四合一图片隐写工作台 <span class="badge">纯本地处理</span></h1>
+      <p>RAC 鲁棒隐写 · 幻影坦克 · 光棱坦克 · 图片混淆 —— 一页集成四大隐写技法，<b>图片不上传服务器</b>，全部在浏览器本地完成。</p>
+    </div>
+  </div>
+</header>
+
+<nav class="tabs" id="tabs">
+  <button class="tab active" data-view="rac">RAC 隐写</button>
+  <button class="tab" data-view="phantom">幻影坦克</button>
+  <button class="tab" data-view="prism">光棱坦克</button>
+  <button class="tab" data-view="scramble">图片混淆</button>
+</nav>
+
+<main id="main">
+
+  <!-- ================= RAC 隐写 ================= -->
+  <section class="view active" id="view-rac">
+    <div class="card">
+      <h3><span class="tile">隐</span> RAC 鲁棒隐写</h3>
+      <p class="hint">把秘密图片藏进封面图：信息编码在 DCT 系数对的差值符号中，抗压缩、抗缩放；隐藏的是 JPEG 压缩后的秘密图，提取可自动恢复原尺寸。</p>
+      <div class="seg" id="rac-subtabs">
+        <button class="on" data-sub="embed">嵌入</button>
+        <button data-sub="extract">提取</button>
+      </div>
+    </div>
+
+    <!-- 嵌入 -->
+    <div class="sub active" id="rac-embed">
+      <div class="card">
+        <h3><span class="tile">封</span> 封面图 · 宿主</h3>
+        <p class="hint">要藏秘密图的封面（建议用清晰大图，容量更大）。</p>
+        <div class="drop" id="rac-cover-drop">
+          <input type="file" accept="image/*" id="rac-cover-file">
+          <div class="ph"><b>点击选择封面图</b><span>PNG / JPG / WebP</span></div>
+          <canvas hidden id="rac-cover-pv"></canvas>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3><span class="tile">密</span> 秘密图 · 被隐藏</h3>
+        <p class="hint">要被藏进封面的图片。</p>
+        <div class="drop" id="rac-secret-drop">
+          <input type="file" accept="image/*" id="rac-secret-file">
+          <div class="ph"><b>点击选择秘密图</b><span>PNG / JPG / WebP</span></div>
+          <canvas hidden id="rac-secret-pv"></canvas>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3><span class="tile">容</span> 可用容量</h3>
+        <p class="hint">封面可隐藏的最大字节数，随画质档位实时更新。</p>
+        <div class="row"><span class="lab">容量</span><span class="val" id="rac-cap">0 B</span></div>
+        <div class="progress"><i id="rac-capbar"></i></div>
+        <div class="status" id="rac-capinfo">实际载荷：尚未嵌入</div>
+      </div>
+
+      <div class="card">
+        <h3><span class="tile">增</span> 封面增强</h3>
+        <p class="hint">把封面长边重采样到目标尺寸，放大可提升恢复清晰度与容量。</p>
+        <div class="row">
+          <span class="lab">增强档位</span>
+          <select id="rac-enhance">
+            <option value="0">不放大</option>
+            <option value="2048">长边 2048</option>
+            <option value="2560">长边 2560</option>
+            <option value="3072">长边 3072</option>
+            <option value="4096">长边 4096</option>
+            <option value="-1">自定义</option>
+          </select>
+        </div>
+        <div class="field" id="rac-enhance-custom" hidden>
+          <input type="number" id="rac-enhance-long" min="64" max="8192" placeholder="自定义长边 64~8192">
+        </div>
+      </div>
+
+      <div class="card">
+        <h3><span class="tile">质</span> 画质与容量</h3>
+        <p class="hint">画质与可嵌入容量的平衡：越靠左越抗压缩、容量小；越靠右容量越大。</p>
+        <div class="row"><span class="lab" id="rac-tier-name">均衡</span><span class="val" id="rac-tier-val"></span></div>
+        <div class="row"><input type="range" id="rac-tier" min="0" max="100" value="50"></div>
+        <details class="more"><summary>自定义参数（ppb / repeat / nsym）</summary>
+          <div class="row"><span class="lab">每块系数对 ppb</span><span class="val" id="rac-ppb-v">2</span></div>
+          <div class="row"><input type="range" id="rac-ppb" min="0" max="11" value="1"></div>
+          <div class="row"><span class="lab">重复 repeat</span><span class="val" id="rac-repeat-v">1</span></div>
+          <div class="row"><input type="range" id="rac-repeat" min="0" max="4" value="0"></div>
+          <div class="row"><span class="lab">校验 nsym</span><span class="val" id="rac-nsym-v">48</span></div>
+          <div class="row"><input type="range" id="rac-nsym" min="0" max="56" value="40"></div>
+        </details>
+      </div>
+
+      <div class="btnrow">
+        <button class="btn primary" id="rac-embed-btn">开始嵌入</button>
+        <button class="btn ghost" id="rac-save-stego">保存隐写图</button>
+        <button class="btn plain" id="rac-reset-embed">重置</button>
+      </div>
+      <div class="progress" id="rac-embed-progress" hidden><i></i></div>
+      <div class="status" id="rac-embed-status"></div>
+
+      <div class="card">
+        <h3><span class="tile">果</span> 隐写结果</h3>
+        <p class="hint">嵌入完成后在这里显示隐写图。</p>
+        <div class="preview" id="rac-stego-pv"><span class="empty">尚未嵌入</span></div>
+        <button class="btn ghost btnrow" id="rac-dl-stego" disabled>下载隐写图</button>
+      </div>
+
+      <div class="card">
+        <h3><span class="tile">验</span> 通道模拟 · 验证鲁棒性</h3>
+        <p class="hint">模拟真实平台链路：缩放 → JPEG 重压缩 → 再提取。</p>
+        <div class="row">
+          <span class="lab">缩放</span>
+          <select id="rac-scale">
+            <option value="1.0">不缩放（100%）</option>
+            <option value="0.9">缩放 90%</option>
+            <option value="0.8">缩放 80%</option>
+            <option value="0.7">缩放 70%</option>
+            <option value="0.6">缩放 60%</option>
+            <option value="0.5">缩放 50%</option>
+          </select>
+        </div>
+        <div class="row">
+          <span class="lab">JPEG 重压缩质量</span>
+          <select id="rac-quality">
+            <option value="100">q100（无损）</option>
+            <option value="90">q90</option>
+            <option value="80">q80</option>
+            <option value="70">q70</option>
+            <option value="60" selected>q60</option>
+            <option value="50">q50</option>
+            <option value="30">q30</option>
+          </select>
+        </div>
+        <button class="btn primary btnrow" id="rac-sim-btn">模拟通道并提取</button>
+        <div class="status" id="rac-sim-status"></div>
+        <div class="preview" id="rac-sim-attacked"><span class="empty">传输后的图像</span></div>
+        <div class="preview" id="rac-sim-recovered"><span class="empty">提取结果 · 恢复的秘密图</span></div>
+        <button class="btn ghost btnrow" id="rac-save-sim" disabled>保存恢复图</button>
+      </div>
+    </div>
+
+    <!-- 提取 -->
+    <div class="sub" id="rac-extract">
+      <div class="card">
+        <h3><span class="tile">隐</span> 隐写图 · 要解密的图片</h3>
+        <p class="hint">选择需要解密的图片。</p>
+        <div class="drop" id="rac-stego-drop">
+          <input type="file" accept="image/*" id="rac-stego-file">
+          <div class="ph"><b>点击选择隐写图</b><span>PNG / JPG / WebP</span></div>
+          <canvas hidden id="rac-stego-pv"></canvas>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3><span class="tile">尺</span> 原图尺寸（可选）</h3>
+        <p class="hint">仅当空间标尺读取失败时用于手动恢复原始尺寸。</p>
+        <div class="field">
+          <input type="number" id="rac-manual-w" placeholder="宽">
+          <input type="number" id="rac-manual-h" placeholder="高">
+        </div>
+      </div>
+
+      <div class="btnrow">
+        <button class="btn primary" id="rac-extract-btn">提取秘密图</button>
+        <button class="btn ghost" id="rac-save-extracted">保存到本地</button>
+        <button class="btn plain" id="rac-reset-extract">重置</button>
+      </div>
+      <div class="status" id="rac-extract-status"></div>
+
+      <div class="card">
+        <h3><span class="tile">果</span> 提取结果</h3>
+        <p class="hint">提取成功后在这里显示秘密图。</p>
+        <div class="preview" id="rac-extract-pv"><span class="empty">尚未提取</span></div>
+        <button class="btn ghost btnrow" id="rac-dl-extracted" disabled>下载秘密图</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 幻影坦克 ================= -->
+  <section class="view" id="view-phantom">
+    <div class="card">
+      <h3><span class="tile">幻</span> 幻影坦克</h3>
+      <p class="hint">利用 PNG 的 alpha 通道：同一张图，在<strong>白色背景</strong>下显示表图，在<strong>黑色背景</strong>下显示里图。灰度模式最精确，彩色模式会有轻微失真。</p>
+    </div>
+    <div class="card">
+      <h3><span class="tile">表</span> 表图 · 白底显示</h3>
+      <div class="drop" id="pt-cover-drop">
+        <input type="file" accept="image/*" id="pt-cover-file">
+        <div class="ph"><b>点击选择表图</b><span>白底 / 亮背景时看到的图</span></div>
+        <canvas hidden id="pt-cover-pv"></canvas>
+      </div>
+    </div>
+    <div class="card">
+      <h3><span class="tile">里</span> 里图 · 黑底显示</h3>
+      <div class="drop" id="pt-secret-drop">
+        <input type="file" accept="image/*" id="pt-secret-file">
+        <div class="ph"><b>点击选择里图</b><span>黑底 / 暗背景时看到的图</span></div>
+        <canvas hidden id="pt-secret-pv"></canvas>
+      </div>
+    </div>
+    <div class="card">
+      <h3><span class="tile">模</span> 生成设置</h3>
+      <div class="seg" id="pt-mode">
+        <button class="on" data-mode="gray">灰度模式（推荐）</button>
+        <button data-mode="color">彩色模式</button>
+      </div>
+      <div class="btnrow"><button class="btn primary" id="pt-gen">生成幻影坦克</button></div>
+      <div class="status" id="pt-status"></div>
+      <div class="seg" id="pt-bg">
+        <button class="on" data-bg="white">白底</button>
+        <button data-bg="black">黑底</button>
+        <button data-bg="checker">棋盘格</button>
+      </div>
+      <div class="preview" id="pt-pv"><span class="empty">生成后在这里预览</span></div>
+      <button class="btn ghost btnrow" id="pt-dl" disabled>下载 PNG</button>
+    </div>
+  </section>
+
+  <!-- ================= 光棱坦克 ================= -->
+  <section class="view" id="view-prism">
+    <div class="card">
+      <h3><span class="tile">棱</span> 光棱坦克</h3>
+      <p class="hint">把隐藏图叠加进表图的亮度域：<strong>正常观看显示表图</strong>，<strong>拉高曝光/亮度后</strong>表图过曝变白、隐藏图浮现。可处理彩色图片。</p>
+    </div>
+    <div class="card">
+      <h3><span class="tile">表</span> 表图 · 正常显示</h3>
+      <div class="drop" id="pr-cover-drop">
+        <input type="file" accept="image/*" id="pr-cover-file">
+        <div class="ph"><b>点击选择表图</b><span>正常亮度下看到的图</span></div>
+        <canvas hidden id="pr-cover-pv"></canvas>
+      </div>
+    </div>
+    <div class="card">
+      <h3><span class="tile">藏</span> 隐藏图 · 拉曝光后显示</h3>
+      <div class="drop" id="pr-secret-drop">
+        <input type="file" accept="image/*" id="pr-secret-file">
+        <div class="ph"><b>点击选择隐藏图</b><span>提亮曝光后浮现的图</span></div>
+        <canvas hidden id="pr-secret-pv"></canvas>
+      </div>
+    </div>
+    <div class="card">
+      <h3><span class="tile">调</span> 合成与预览</h3>
+      <div class="row"><span class="lab">表图亮度权重（越高越容易看到表图）</span><span class="val" id="pr-wa-v">0.55</span></div>
+      <div class="row"><input type="range" id="pr-wa" min="30" max="80" value="55"></div>
+      <div class="row"><span class="lab">隐藏图亮度权重</span><span class="val" id="pr-wb-v">0.22</span></div>
+      <div class="row"><input type="range" id="pr-wb" min="10" max="40" value="22"></div>
+      <div class="btnrow"><button class="btn primary" id="pr-gen">合成光棱坦克</button></div>
+      <div class="status" id="pr-status"></div>
+      <div class="row"><span class="lab">曝光预览（0.5×~5×）</span><span class="val" id="pr-ex-v">1.0×</span></div>
+      <div class="row"><input type="range" id="pr-ex" min="5" max="50" value="10"></div>
+      <div class="preview" id="pr-pv"><span class="empty">合成后拖动曝光预览</span></div>
+      <button class="btn ghost btnrow" id="pr-dl" disabled>下载合成图</button>
+    </div>
+  </section>
+
+  <!-- ================= 图片混淆 ================= -->
+  <section class="view" id="view-scramble">
+    <div class="card">
+      <h3><span class="tile">乱</span> 图片混淆 · Arnold 置乱</h3>
+      <p class="hint">用 Arnold 猫映射把像素位置打乱：<strong>迭代次数即密钥</strong>。加密 N 次、解密 N 次即恢复原图。非正方形图片自动补边，恢复时裁回原尺寸。</p>
+    </div>
+    <div class="card">
+      <h3><span class="tile">图</span> 原始图片</h3>
+      <div class="drop" id="sc-img-drop">
+        <input type="file" accept="image/*" id="sc-img-file">
+        <div class="ph"><b>点击选择图片</b><span>PNG / JPG / WebP</span></div>
+        <canvas hidden id="sc-img-pv"></canvas>
+      </div>
+    </div>
+    <div class="card">
+      <h3><span class="tile">钥</span> 置乱参数</h3>
+      <div class="row"><span class="lab">迭代次数（密钥，1~200）</span><span class="val" id="sc-it-v">10</span></div>
+      <div class="row"><input type="range" id="sc-it" min="1" max="200" value="10"></div>
+      <div class="btnrow">
+        <button class="btn primary" id="sc-encrypt">加密（置乱）</button>
+        <button class="btn ghost" id="sc-decrypt" disabled>解密（恢复）</button>
+      </div>
+      <div class="status" id="sc-status"></div>
+    </div>
+    <div class="card">
+      <h3><span class="tile">果</span> 结果预览</h3>
+      <div class="preview" id="sc-pv"><span class="empty">加密后在这里预览</span></div>
+      <button class="btn ghost btnrow" id="sc-dl" disabled>下载结果</button>
+    </div>
+  </section>
+
+</main>
+
+<div class="tribute">
+  <h2>灵感来源与致敬</h2>
+  <p class="t-sub">四大模块的算法与交互，建立在以下开源项目与创作者的工作之上，向它们致谢：</p>
+  <div class="t-grid">
+    <a class="t-card" href="https://github.com/tuoPzf/rac-hide" target="_blank" rel="noopener">
+      <span class="t-tag">RAC 隐写</span>
+      <b>rac-hide</b>
+      <i>tuoPzf · Robust Attribute Coding，DCT 系数差鲁棒隐写，本工作台算法移植来源</i>
+    </a>
+    <a class="t-card" href="https://github.com/jimieguang/colorful-tank" target="_blank" rel="noopener">
+      <span class="t-tag">幻影坦克</span>
+      <b>colorful-tank</b>
+      <i>jimieguang · 高质量彩色幻影坦克生成（HSV 色彩空间优化）</i>
+    </a>
+    <a class="t-card" href="https://gitee.com/mathematics128/T_A_N_K" target="_blank" rel="noopener">
+      <span class="t-tag">幻影坦克</span>
+      <b>T_A_N_K</b>
+      <i>mathematics128 · 幻影坦克核心算法与图片对齐实现</i>
+    </a>
+    <a class="t-card" href="https://prism.uyanide.com/" target="_blank" rel="noopener">
+      <span class="t-tag">光棱坦克</span>
+      <b>光棱坦克工厂</b>
+      <i>uyanide · 亮度域双显（拉曝光显隐图）的开源实现与显形工具</i>
+    </a>
+    <a class="t-card" href="https://passbya.xyz/2021/10/09/%E5%B9%BB%E5%BD%B1%E5%9D%A6%E5%85%8B%E5%8E%9F%E7%90%86%E8%A7%A3%E6%9E%90/" target="_blank" rel="noopener">
+      <span class="t-tag">原理</span>
+      <b>幻影坦克原理解析</b>
+      <i>PassbyA · alpha 混合公式与双背景显像的数学推导</i>
+    </a>
+    <a class="t-card" href="https://1cepeak.cn/posts/arnold/" target="_blank" rel="noopener">
+      <span class="t-tag">图片混淆</span>
+      <b>Arnold 猫脸变换</b>
+      <i>Vladimir Arnold · 像素位置置乱（混沌映射），迭代次数即密钥；1cePeak 文章讲解</i>
+    </a>
+  </div>
+  <p class="foot">图隐套件 Tuyin Suite · 纯前端单文件实现 · 所有处理均在浏览器本地完成，图片不出设备</p>
+</div>
+
+<script>
+/* ================= RAC-Hide 核心算法（自 rac-hide 移植，MIT） ================= */
+(function(){
+/* ---- constants.js ---- */
+const BLOCK_SIZE = 8;
+const MAGIC = Uint8Array.of(0x53, 0x54, 0x47, 0x31);
+const CODEWORD_BITS = 255 * 8;
+const PAYLOAD_HEADER_BYTES = 11;
+const MAX_PAYLOAD_BYTES = 10 * 1024 * 1024;
+const READ_THRESHOLD = 2;
+const COEFFICIENT_PAIRS = Object.freeze([
+  [[0, 1], [1, 0]], [[0, 2], [2, 0]], [[1, 1], [0, 3]], [[3, 0], [2, 1]],
+  [[1, 2], [0, 4]], [[4, 0], [3, 1]], [[2, 2], [1, 3]], [[0, 5], [5, 0]],
+  [[3, 2], [2, 3]], [[1, 4], [4, 1]], [[0, 6], [6, 0]], [[2, 4], [4, 2]],
+]);
+const PAIR_COUNT = COEFFICIENT_PAIRS.length;
+const DEFAULT_OPTIONS = Object.freeze({
+  ppb: 2, repeat: 1, nsym: 48, marginMin: 40, marginGain: 1.4, marginMax: 200,
+});
+
+/* ---- dct.js ---- */
+const N8 = BLOCK_SIZE;
+const SCALE_DC = Math.sqrt(1 / N8);
+const SCALE_AC = Math.sqrt(2 / N8);
+const COS = (() => {
+  const table = [];
+  for (let k = 0; k < N8; k++) {
+    table[k] = new Float64Array(N8);
+    for (let n = 0; n < N8; n++) table[k][n] = Math.cos((Math.PI * (2 * n + 1) * k) / (2 * N8));
+  }
+  return table;
+})();
+function dct1d(input) {
+  const out = new Float64Array(N8);
+  for (let k = 0; k < N8; k++) {
+    let sum = 0;
+    const row = COS[k];
+    for (let n = 0; n < N8; n++) sum += input[n] * row[n];
+    out[k] = sum * (k === 0 ? SCALE_DC : SCALE_AC);
+  }
+  return out;
+}
+function idct1d(input) {
+  const out = new Float64Array(N8);
+  for (let n = 0; n < N8; n++) {
+    let sum = 0;
+    for (let k = 0; k < N8; k++) sum += (k === 0 ? SCALE_DC : SCALE_AC) * input[k] * COS[k][n];
+    out[n] = sum;
+  }
+  return out;
+}
+function dct2d(block) {
+  const rows = [];
+  for (let i = 0; i < N8; i++) rows[i] = dct1d(block[i]);
+  const out = [];
+  const column = new Float64Array(N8);
+  for (let j = 0; j < N8; j++) {
+    for (let i = 0; i < N8; i++) column[i] = rows[i][j];
+    const transformed = dct1d(column);
+    for (let i = 0; i < N8; i++) {
+      if (!out[i]) out[i] = new Float64Array(N8);
+      out[i][j] = transformed[i];
+    }
+  }
+  return out;
+}
+function idct2d(block) {
+  const columns = [];
+  const column = new Float64Array(N8);
+  for (let j = 0; j < N8; j++) {
+    for (let i = 0; i < N8; i++) column[i] = block[i][j];
+    columns[j] = idct1d(column);
+  }
+  const out = [];
+  for (let i = 0; i < N8; i++) {
+    const row = new Float64Array(N8);
+    for (let j = 0; j < N8; j++) row[j] = columns[j][i];
+    out[i] = idct1d(row);
+  }
+  return out;
+}
+
+/* ---- color.js ---- */
+function toLuma(rgba, width, height) {
+  const out = new Float64Array(width * height);
+  for (let i = 0; i < out.length; i++) {
+    out[i] = 0.299 * rgba[i * 4] + 0.587 * rgba[i * 4 + 1] + 0.114 * rgba[i * 4 + 2];
+  }
+  return out;
+}
+function reconstructRgb(r, g, b, targetY) {
+  const luma = 0.299 * r + 0.587 * g + 0.114 * b;
+  const delta = targetY - luma;
+  let r2 = r + delta, g2 = g + delta, b2 = b + delta;
+  r2 = clamp255(r2); g2 = clamp255(g2); b2 = clamp255(b2);
+  let error = targetY - (0.299 * r2 + 0.587 * g2 + 0.114 * b2);
+  const order = [[1, 0.587], [0, 0.299], [2, 0.114]];
+  for (let k = 0; k < order.length && Math.abs(error) > 0.35; k++) {
+    const channel = order[k][0], weight = order[k][1];
+    const value = clamp255((channel === 0 ? r2 : channel === 1 ? g2 : b2) + error / weight);
+    if (channel === 0) r2 = value; else if (channel === 1) g2 = value; else b2 = value;
+    error = targetY - (0.299 * r2 + 0.587 * g2 + 0.114 * b2);
+  }
+  if (Math.abs(error) > 0.35) { r2 = g2 = b2 = targetY; }
+  const r0 = Math.round(r2), g0 = Math.round(g2), b0 = Math.round(b2);
+  let bestR = r0, bestG = g0, bestB = b0;
+  let bestError = Math.abs(0.299 * r0 + 0.587 * g0 + 0.114 * b0 - targetY);
+  for (let dr = -1; dr <= 1; dr++) for (let dg = -1; dg <= 1; dg++) for (let db = -1; db <= 1; db++) {
+    const rr = r0 + dr, gg = g0 + dg, bb = b0 + db;
+    if (rr < 0 || rr > 255 || gg < 0 || gg > 255 || bb < 0 || bb > 255) continue;
+    const e = Math.abs(0.299 * rr + 0.587 * gg + 0.114 * bb - targetY);
+    if (e < bestError) { bestError = e; bestR = rr; bestG = gg; bestB = bb; }
+  }
+  return [bestR, bestG, bestB];
+}
+function clamp255(v) { return v < 0 ? 0 : v > 255 ? 255 : v; }
+
+/* ---- interleave.js ---- */
+function slotForIndex(k, rmax) { return (k % CODEWORD_BITS) * rmax + Math.floor(k / CODEWORD_BITS); }
+function deinterleave(slotBits, rmax, count) {
+  const out = new Uint8Array(count);
+  for (let k = 0; k < count; k++) out[k] = slotBits[slotForIndex(k, rmax)];
+  return out;
+}
+
+/* ---- bits.js ---- */
+function bytesToBits(bytes) {
+  const bits = new Uint8Array(bytes.length * 8);
+  let p = 0;
+  for (let i = 0; i < bytes.length; i++) {
+    const byte = bytes[i];
+    for (let k = 7; k >= 0; k--) bits[p++] = (byte >> k) & 1;
+  }
+  return bits;
+}
+function bitsToBytes(bits) {
+  const n = Math.floor(bits.length / 8);
+  const out = new Uint8Array(n);
+  for (let i = 0; i < n; i++) {
+    let byte = 0;
+    for (let k = 0; k < 8; k++) byte = (byte << 1) | (bits[i * 8 + k] & 1);
+    out[i] = byte;
+  }
+  return out;
+}
+
+/* ---- reed-solomon.js ---- */
+const PRIMITIVE = 0x11d, FIELD_SIZE = 256, CODEWORD_BYTES = 255;
+const EXP = new Uint8Array(512), LOG = new Uint8Array(FIELD_SIZE);
+(function buildTables() {
+  let x = 1;
+  for (let i = 0; i < CODEWORD_BYTES; i++) { EXP[i] = x; LOG[x] = i; x <<= 1; if (x & 0x100) x ^= PRIMITIVE; }
+  for (let i = CODEWORD_BYTES; i < 512; i++) EXP[i] = EXP[i - CODEWORD_BYTES];
+})();
+function gfMul(a, b) { if (a === 0 || b === 0) return 0; return EXP[LOG[a] + LOG[b]]; }
+function gfDiv(a, b) { if (a === 0) return 0; return EXP[(LOG[a] - LOG[b] + CODEWORD_BYTES) % CODEWORD_BYTES]; }
+function gfInv(a) { return EXP[CODEWORD_BYTES - LOG[a]]; }
+function gfPow(a, n) { const e = ((n % CODEWORD_BYTES) + CODEWORD_BYTES) % CODEWORD_BYTES; return EXP[(LOG[a] * e) % CODEWORD_BYTES]; }
+function polyScale(p, x) { return p.map((c) => gfMul(c, x)); }
+function polyAdd(p, q) {
+  const r = new Array(Math.max(p.length, q.length)).fill(0);
+  for (let i = 0; i < p.length; i++) r[i + r.length - p.length] = p[i];
+  for (let i = 0; i < q.length; i++) r[i + r.length - q.length] ^= q[i];
+  return r;
+}
+function polyMul(p, q) {
+  const r = new Array(p.length + q.length - 1).fill(0);
+  for (let j = 0; j < q.length; j++) for (let i = 0; i < p.length; i++) r[i + j] ^= gfMul(p[i], q[j]);
+  return r;
+}
+function polyEval(p, x) { let y = p[0]; for (let i = 1; i < p.length; i++) y = gfMul(y, x) ^ p[i]; return y; }
+function polyDiv(dividend, divisor) {
+  const out = dividend.slice();
+  const limit = dividend.length - (divisor.length - 1);
+  for (let i = 0; i < limit; i++) {
+    const c = out[i];
+    if (c !== 0) for (let j = 1; j < divisor.length; j++) if (divisor[j] !== 0) out[i + j] ^= gfMul(divisor[j], c);
+  }
+  const sep = -(divisor.length - 1);
+  return [out.slice(0, sep), out.slice(sep)];
+}
+function generatorPoly(nsym) { let g = [1]; for (let i = 0; i < nsym; i++) g = polyMul(g, [1, gfPow(2, i)]); return g; }
+function syndromes(msg, nsym) {
+  const s = new Array(nsym + 1).fill(0);
+  const a = Array.from(msg);
+  for (let i = 0; i < nsym; i++) s[i + 1] = polyEval(a, gfPow(2, i));
+  return s;
+}
+function findErrorLocator(synd, nsym) {
+  let errLoc = [1], oldLoc = [1];
+  const shift = synd.length - nsym;
+  for (let i = 0; i < nsym; i++) {
+    const K = i + shift;
+    let d = synd[K];
+    for (let j = 1; j < errLoc.length; j++) d ^= gfMul(errLoc[errLoc.length - 1 - j], synd[K - j]);
+    oldLoc = oldLoc.concat([0]);
+    if (d !== 0) {
+      if (oldLoc.length > errLoc.length) { const next = polyScale(oldLoc, d); oldLoc = polyScale(errLoc, gfInv(d)); errLoc = next; }
+      errLoc = polyAdd(errLoc, polyScale(oldLoc, d));
+    }
+  }
+  let i = 0;
+  while (i < errLoc.length && errLoc[i] === 0) i++;
+  errLoc = errLoc.slice(i);
+  if ((errLoc.length - 1) * 2 > nsym) return null;
+  return errLoc;
+}
+function findErrorPositions(errLoc, messageLength) {
+  const errorCount = errLoc.length - 1;
+  const positions = [];
+  for (let i = 0; i < messageLength; i++) if (polyEval(errLoc, gfPow(2, -i)) === 0) positions.push(messageLength - 1 - i);
+  if (positions.length !== errorCount) return null;
+  return positions;
+}
+function correctErrors(msg, synd, errPos) {
+  const m = msg.length;
+  const coefPos = errPos.map((p) => m - 1 - p);
+  let errLoc = [1];
+  for (let i = 0; i < coefPos.length; i++) errLoc = polyMul(errLoc, polyAdd([1], [gfPow(2, coefPos[i]), 0]));
+  let errEval = polyDiv(polyMul(synd.slice().reverse(), errLoc), [1].concat(new Array(errLoc.length).fill(0)))[1];
+  errEval = errEval.slice().reverse();
+  const X = coefPos.map((cp) => gfPow(2, cp));
+  const out = Array.from(msg);
+  for (let i = 0; i < X.length; i++) {
+    const Xi = X[i], XiInv = gfInv(Xi);
+    let den = 1;
+    for (let j = 0; j < X.length; j++) if (j !== i) den = gfMul(den, 1 ^ gfMul(XiInv, X[j]));
+    let y = polyEval(errEval.slice().reverse(), XiInv);
+    y = gfMul(gfPow(Xi, 1), y);
+    out[errPos[i]] ^= gfDiv(y, den);
+  }
+  return out;
+}
+class ReedSolomon {
+  constructor(nsym) {
+    if (!Number.isInteger(nsym) || nsym <= 0 || nsym >= CODEWORD_BYTES) throw new RangeError(`nsym must be in 1..${CODEWORD_BYTES - 1}, got ${nsym}`);
+    this.nsym = nsym;
+    this.generator = generatorPoly(nsym);
+  }
+  get rate() { return (CODEWORD_BYTES - this.nsym) / CODEWORD_BYTES; }
+  encode(message) {
+    const nsym = this.nsym, gen = this.generator;
+    const work = new Uint8Array(message.length + nsym);
+    work.set(message, 0);
+    for (let i = 0; i < message.length; i++) {
+      const c = work[i];
+      if (c !== 0) for (let j = 0; j < gen.length; j++) work[i + j] ^= gfMul(gen[j], c);
+    }
+    const out = new Uint8Array(message.length + nsym);
+    out.set(message, 0);
+    out.set(work.subarray(message.length), message.length);
+    return out;
+  }
+  decode(received) {
+    const nsym = this.nsym, msg = Array.from(received);
+    const synd = syndromes(msg, nsym);
+    if (synd.every((s) => s === 0)) return Uint8Array.from(msg);
+    const errLoc = findErrorLocator(synd, nsym);
+    if (!errLoc) return null;
+    const errPos = findErrorPositions(errLoc, msg.length);
+    if (!errPos) return null;
+    const corrected = correctErrors(msg, synd, errPos);
+    const check = syndromes(corrected, nsym);
+    if (!check.every((s) => s === 0)) return null;
+    return Uint8Array.from(corrected);
+  }
+}
+
+/* ---- ruler.js ---- */
+const G = 112, D = 6.0, MAGIC_BYTE = 0xa5, MAGIC_BYTE2 = 0x5a, RS_PARITY = 4, K = 80, SEED = 0x51ed, MAX_DIM = 65535;
+const PAIRS = (() => {
+  const pairs = [];
+  for (let j = 0; j < G; j++) for (let i = 0; i + 1 < G; i += 2) pairs.push([i, j, i + 1, j]);
+  for (let i = 0; i < G; i++) for (let j = 0; j + 1 < G; j += 2) pairs.push([i, j, i, j + 1]);
+  let state = SEED >>> 0;
+  const rnd = () => { state = (state * 1664525 + 1013904223) >>> 0; return state / 4294967296; };
+  for (let k = pairs.length - 1; k > 0; k--) { const r = Math.floor(rnd() * (k + 1)); const tmp = pairs[k]; pairs[k] = pairs[r]; pairs[r] = tmp; }
+  return pairs;
+})();
+const R = Math.floor(PAIRS.length / K);
+function encodeRulerBits(coverW, coverH) {
+  const data = [MAGIC_BYTE, MAGIC_BYTE2, (coverW >> 8) & 0xff, coverW & 0xff, (coverH >> 8) & 0xff, coverH & 0xff];
+  const encoded = new ReedSolomon(RS_PARITY).encode(data);
+  const bits = new Uint8Array(K);
+  for (let i = 0; i < K; i++) bits[i] = (encoded[i >> 3] >> (7 - (i & 7))) & 1;
+  return bits;
+}
+function decodeRulerBits(bits) {
+  const bytes = new Uint8Array(K / 8);
+  for (let i = 0; i < K; i++) if (bits[i]) bytes[i >> 3] |= 1 << (7 - (i & 7));
+  let decoded;
+  try { decoded = new ReedSolomon(RS_PARITY).decode(bytes); } catch (e) { return null; }
+  if (!decoded || decoded[0] !== MAGIC_BYTE || decoded[1] !== MAGIC_BYTE2) return null;
+  const coverW = (decoded[2] << 8) | decoded[3], coverH = (decoded[4] << 8) | decoded[5];
+  if (coverW < 16 || coverW > MAX_DIM || coverH < 16 || coverH > MAX_DIM) return null;
+  return [coverW, coverH];
+}
+function buildRulerField(coverW, coverH, width, height) {
+  const bits = encodeRulerBits(coverW, coverH);
+  const lattice = new Float64Array(G * G);
+  for (let k = 0; k < K; k++) {
+    const sign = bits[k] ? 1 : -1;
+    for (let r = 0; r < R; r++) {
+      const p = PAIRS[k * R + r];
+      lattice[p[1] * G + p[0]] += sign * D;
+      lattice[p[3] * G + p[2]] -= sign * D;
+    }
+  }
+  return bilinear(lattice, height, width);
+}
+function bilinear(lattice, height, width) {
+  const out = new Float32Array(height * width);
+  for (let y = 0; y < height; y++) {
+    const v = ((y + 0.5) * G) / height - 0.5;
+    const j0 = Math.floor(v), t = v - j0;
+    const j0c = clampInt(j0, 0, G - 1), j1c = clampInt(j0 + 1, 0, G - 1);
+    for (let x = 0; x < width; x++) {
+      const u = ((x + 0.5) * G) / width - 0.5;
+      const i0 = Math.floor(u), s = u - i0;
+      const i0c = clampInt(i0, 0, G - 1), i1c = clampInt(i0 + 1, 0, G - 1);
+      const a = lattice[j0c * G + i0c] * (1 - s) + lattice[j0c * G + i1c] * s;
+      const b = lattice[j1c * G + i0c] * (1 - s) + lattice[j1c * G + i1c] * s;
+      out[y * width + x] = a * (1 - t) + b * t;
+    }
+  }
+  return out;
+}
+function cellBounds(n) {
+  const bounds = new Int32Array(G + 1);
+  for (let i = 0; i <= G; i++) bounds[i] = Math.round((i * n) / G);
+  return bounds;
+}
+function readLattice(rgb, width, height, useLuma) {
+  const xs = cellBounds(width), ys = cellBounds(height);
+  const lattice = new Float64Array(G * G);
+  for (let j = 0; j < G; j++) {
+    const y0 = ys[j], y1 = ys[j + 1];
+    for (let i = 0; i < G; i++) {
+      const x0 = xs[i], x1 = xs[i + 1];
+      let sum = 0, n = 0;
+      for (let y = y0; y < y1; y++) for (let x = x0; x < x1; x++) {
+        const p = (y * width + x) * 3;
+        sum += useLuma ? 0.299 * rgb[p] + 0.587 * rgb[p + 1] + 0.114 * rgb[p + 2]
+          : 128 - 0.168736 * rgb[p] - 0.331264 * rgb[p + 1] + 0.5 * rgb[p + 2];
+        n++;
+      }
+      lattice[j * G + i] = n ? sum / n : 0;
+    }
+  }
+  const bits = new Uint8Array(K);
+  for (let k = 0; k < K; k++) {
+    let acc = 0;
+    for (let r = 0; r < R; r++) {
+      const q = PAIRS[k * R + r];
+      acc += lattice[q[1] * G + q[0]] - lattice[q[3] * G + q[2]];
+    }
+    bits[k] = acc > 0 ? 1 : 0;
+  }
+  return decodeRulerBits(bits);
+}
+function readRulerSize(rgb, width, height) { return readLattice(rgb, width, height, false) || readLattice(rgb, width, height, true); }
+function detectRulerSize(rgb, width, height) {
+  const got = readRulerSize(rgb, width, height);
+  if (!got) return null;
+  const expected = got[0] / got[1], observed = width / height;
+  if (Math.abs(expected - observed) / observed > 0.06) return null;
+  return got;
+}
+function clampInt(v, lo, hi) { return v < lo ? lo : v > hi ? hi : v; }
+
+/* ---- core.js ---- */
+const RS_CACHE = new Map();
+function rsFor(nsym) {
+  let codec = RS_CACHE.get(nsym);
+  if (!codec) { codec = new ReedSolomon(nsym); RS_CACHE.set(nsym, codec); }
+  return codec;
+}
+function normalizeOptions(options) {
+  const merged = { ...DEFAULT_OPTIONS, ...(options || {}) };
+  const { ppb, repeat, nsym } = merged;
+  if (!Number.isInteger(ppb) || ppb < 1 || ppb > COEFFICIENT_PAIRS.length) throw new RangeError(`ppb must be an integer in 1..${COEFFICIENT_PAIRS.length}`);
+  if (!Number.isInteger(repeat) || repeat < 1 || repeat > 5) throw new RangeError('repeat must be an integer in 1..5');
+  if (!Number.isInteger(nsym) || nsym < 8 || nsym > 64) throw new RangeError('nsym must be an integer in 8..64');
+  return merged;
+}
+function capacityBytes(width, height, options) {
+  const { ppb, repeat, nsym } = normalizeOptions(options);
+  const bw = Math.floor(width / BLOCK_SIZE), bh = Math.floor(height / BLOCK_SIZE);
+  const totalSlots = bw * bh * ppb;
+  const rmax = Math.floor(totalSlots / CODEWORD_BITS);
+  const maxCodewords = Math.floor(rmax / repeat);
+  return Math.max(0, maxCodewords * (255 - nsym) - PAYLOAD_HEADER_BYTES);
+}
+function buildPayload(jpeg, options) {
+  const { ppb, repeat, nsym } = normalizeOptions(options);
+  const payload = new Uint8Array(PAYLOAD_HEADER_BYTES + jpeg.length);
+  payload.set(MAGIC, 0);
+  payload[4] = ppb; payload[5] = repeat; payload[6] = nsym;
+  const len = jpeg.length;
+  payload[7] = (len >>> 24) & 0xff; payload[8] = (len >>> 16) & 0xff; payload[9] = (len >>> 8) & 0xff; payload[10] = len & 0xff;
+  payload.set(jpeg, PAYLOAD_HEADER_BYTES);
+  return payload;
+}
+function embed(imageData, payload, options) {
+  const { ppb, repeat, nsym, marginMin, marginGain, marginMax } = normalizeOptions(options);
+  const { data, width, height } = imageData;
+  const bw = Math.floor(width / BLOCK_SIZE), bh = Math.floor(height / BLOCK_SIZE);
+  const totalSlots = bw * bh * ppb;
+  const rmax = Math.floor(totalSlots / CODEWORD_BITS);
+  if (rmax < 1) throw new Error('cover image is too small to embed anything');
+  const messageBytes = 255 - nsym;
+  const maxCodewords = Math.floor(rmax / repeat);
+  if (payload.length > maxCodewords * messageBytes) throw new Error(`payload of ${payload.length} B exceeds capacity of ${maxCodewords * messageBytes} B`);
+  const { repeated } = encodeStream(payload, { ppb, repeat, nsym });
+  const slotBits = new Int8Array(totalSlots).fill(-1);
+  for (let k = 0; k < repeated.length; k++) slotBits[slotForIndex(k, rmax)] = repeated[k];
+  const rulerField = buildRulerField(width, height, width, height);
+  const rulerRgb = new Float64Array(width * height * 3);
+  const gray = new Float64Array(width * height);
+  for (let i = 0; i < width * height; i++) {
+    const r = data[i * 4], g = data[i * 4 + 1], b = data[i * 4 + 2];
+    const y = 0.299 * r + 0.587 * g + 0.114 * b;
+    const cr = 128 + 0.5 * r - 0.418688 * g - 0.081312 * b;
+    let cb = 128 - 0.168736 * r - 0.331264 * g + 0.5 * b + rulerField[i];
+    if (cb < 0) cb = 0; else if (cb > 255) cb = 255;
+    const ncr = cr - 128, ncb = cb - 128;
+    const nr = y + 1.402 * ncr, ng = y - 0.344136 * ncb - 0.714136 * ncr, nb = y + 1.772 * ncb;
+    rulerRgb[i * 3] = nr; rulerRgb[i * 3 + 1] = ng; rulerRgb[i * 3 + 2] = nb;
+    gray[i] = 0.299 * nr + 0.587 * ng + 0.114 * nb;
+  }
+  const room = 255 - 2 * marginMin;
+  for (let by = 0; by < bh; by++) for (let bx = 0; bx < bw; bx++) {
+    const base = (by * bw + bx) * ppb;
+    let used = false;
+    for (let p = 0; p < ppb; p++) if (slotBits[base + p] >= 0) { used = true; break; }
+    if (!used) continue;
+    const block = [];
+    let bmn = Infinity, bmx = -Infinity;
+    for (let i = 0; i < BLOCK_SIZE; i++) {
+      block[i] = new Float64Array(BLOCK_SIZE);
+      for (let j = 0; j < BLOCK_SIZE; j++) {
+        const v = gray[(by * BLOCK_SIZE + i) * width + (bx * BLOCK_SIZE + j)] - 128;
+        block[i][j] = v;
+        if (v < bmn) bmn = v;
+        if (v > bmx) bmx = v;
+      }
+    }
+    if (bmx - bmn > room) {
+      const mid = (bmn + bmx) / 2, scale = room / (bmx - bmn);
+      for (let i = 0; i < BLOCK_SIZE; i++) for (let j = 0; j < BLOCK_SIZE; j++) block[i][j] = mid + (block[i][j] - mid) * scale;
+    }
+    const coeffs = dct2d(block);
+    for (let p = 0; p < ppb; p++) {
+      const bit = slotBits[base + p];
+      if (bit < 0) continue;
+      const [a, b] = COEFFICIENT_PAIRS[p];
+      const c1 = coeffs[a[0]][a[1]], c2 = coeffs[b[0]][b[1]];
+      const d = c1 - c2;
+      const avgMag = (Math.abs(c1) + Math.abs(c2)) / 2;
+      const margin = Math.min(Math.max(marginMin, marginGain * avgMag), marginMax);
+      const target = bit === 1 ? margin : -margin;
+      if (bit === 1 && d >= target) continue;
+      if (bit === 0 && d <= target) continue;
+      const delta = (target - d) / 2;
+      coeffs[a[0]][a[1]] += delta;
+      coeffs[b[0]][b[1]] -= delta;
+    }
+    const modulated = idct2d(coeffs);
+    let mn = Infinity, mx = -Infinity;
+    for (let i = 0; i < BLOCK_SIZE; i++) for (let j = 0; j < BLOCK_SIZE; j++) {
+      const v = modulated[i][j];
+      if (v < mn) mn = v;
+      if (v > mx) mx = v;
+    }
+    let shift = 0;
+    if (mx > 127) shift = 127 - mx;
+    else if (mn < -128) shift = -128 - mn;
+    for (let i = 0; i < BLOCK_SIZE; i++) for (let j = 0; j < BLOCK_SIZE; j++)
+      gray[(by * BLOCK_SIZE + i) * width + (bx * BLOCK_SIZE + j)] = modulated[i][j] + shift + 128;
+  }
+  const out = new Uint8ClampedArray(width * height * 4);
+  for (let i = 0; i < width * height; i++) {
+    const rgb = reconstructRgb(rulerRgb[i * 3], rulerRgb[i * 3 + 1], rulerRgb[i * 3 + 2], gray[i]);
+    out[i * 4] = rgb[0]; out[i * 4 + 1] = rgb[1]; out[i * 4 + 2] = rgb[2]; out[i * 4 + 3] = 255;
+  }
+  return { data: out, width, height };
+}
+function encodeStream(payload, { repeat, nsym }) {
+  const messageBytes = 255 - nsym;
+  const numCodewords = Math.ceil(payload.length / messageBytes);
+  const padded = new Uint8Array(numCodewords * messageBytes);
+  padded.set(payload, 0);
+  const codec = rsFor(nsym);
+  const encoded = new Uint8Array(numCodewords * 255);
+  for (let c = 0; c < numCodewords; c++) encoded.set(codec.encode(padded.subarray(c * messageBytes, (c + 1) * messageBytes)), c * 255);
+  const encodedBits = bytesToBits(encoded);
+  const repeated = new Uint8Array(encodedBits.length * repeat);
+  for (let i = 0; i < encodedBits.length; i++) for (let r = 0; r < repeat; r++) repeated[i * repeat + r] = encodedBits[i];
+  return { encodedBits, repeated };
+}
+function extract(imageData) {
+  const { data, width, height } = imageData;
+  const gray = toLuma(data, width, height);
+  const bw = Math.floor(width / BLOCK_SIZE), bh = Math.floor(height / BLOCK_SIZE);
+  const totalBlocks = bw * bh;
+  if (totalBlocks === 0) return null;
+  const allDeltas = new Int16Array(totalBlocks * COEFFICIENT_PAIRS.length);
+  for (let by = 0; by < bh; by++) for (let bx = 0; bx < bw; bx++) {
+    const block = [];
+    for (let i = 0; i < BLOCK_SIZE; i++) {
+      block[i] = new Float64Array(BLOCK_SIZE);
+      for (let j = 0; j < BLOCK_SIZE; j++) block[i][j] = gray[(by * BLOCK_SIZE + i) * width + (bx * BLOCK_SIZE + j)] - 128;
+    }
+    const coeffs = dct2d(block);
+    const base = (by * bw + bx) * COEFFICIENT_PAIRS.length;
+    for (let p = 0; p < COEFFICIENT_PAIRS.length; p++) {
+      const [a, b] = COEFFICIENT_PAIRS[p];
+      allDeltas[base + p] = Math.round(coeffs[a[0]][a[1]] - coeffs[b[0]][b[1]]);
+    }
+  }
+  for (let ppb = 1; ppb <= COEFFICIENT_PAIRS.length; ppb++) {
+    const totalSlots = totalBlocks * ppb;
+    const rmax = Math.floor(totalSlots / CODEWORD_BITS);
+    if (rmax < 2) continue;
+    const slotBits = new Uint8Array(totalSlots);
+    for (let blockIndex = 0; blockIndex < totalBlocks; blockIndex++) {
+      const base = blockIndex * ppb, deltaBase = blockIndex * COEFFICIENT_PAIRS.length;
+      for (let p = 0; p < ppb; p++) slotBits[base + p] = allDeltas[deltaBase + p] >= READ_THRESHOLD ? 1 : 0;
+    }
+    for (let repeat = 1; repeat <= 5; repeat++) {
+      let firstBits;
+      if (repeat > 1) {
+        const raw = deinterleave(slotBits, rmax, CODEWORD_BITS * repeat);
+        firstBits = new Uint8Array(CODEWORD_BITS);
+        for (let i = 0; i < CODEWORD_BITS; i++) firstBits[i] = raw[i * repeat];
+      } else {
+        firstBits = deinterleave(slotBits, rmax, CODEWORD_BITS);
+      }
+      const firstBytes = bitsToBytes(firstBits);
+      for (let nsym = 8; nsym <= 64; nsym++) {
+        const codec = rsFor(nsym);
+        const first = codec.decode(firstBytes);
+        if (!first) continue;
+        if (first[0] !== MAGIC[0] || first[1] !== MAGIC[1] || first[2] !== MAGIC[2] || first[3] !== MAGIC[3]) continue;
+        const headerPpb = first[4], headerRepeat = first[5], headerNsym = first[6];
+        if (headerPpb !== ppb || headerRepeat !== repeat || headerNsym !== nsym ||
+            headerPpb < 1 || headerPpb > COEFFICIENT_PAIRS.length || headerRepeat < 1 || headerRepeat > 5) continue;
+        const messageBytes = 255 - nsym;
+        const len = ((first[7] << 24) | (first[8] << 16) | (first[9] << 8) | first[10]) >>> 0;
+        if (len <= 0 || len > MAX_PAYLOAD_BYTES) continue;
+        const numCodewords = Math.ceil((PAYLOAD_HEADER_BYTES + len) / messageBytes);
+        if (numCodewords > rmax) continue;
+        const payload = decodeStream(slotBits, rmax, repeat, numCodewords, messageBytes, codec);
+        if (!payload) continue;
+        const jpeg = payload.slice(PAYLOAD_HEADER_BYTES, PAYLOAD_HEADER_BYTES + len);
+        return { jpeg, ppb, repeat, nsym };
+      }
+    }
+  }
+  return null;
+}
+function decodeStream(slotBits, rmax, repeat, numCodewords, messageBytes, codec) {
+  let allBits;
+  if (repeat > 1) {
+    const raw = deinterleave(slotBits, rmax, numCodewords * CODEWORD_BITS * repeat);
+    allBits = new Uint8Array(numCodewords * CODEWORD_BITS);
+    for (let j = 0; j < allBits.length; j++) allBits[j] = raw[j * repeat];
+  } else {
+    allBits = deinterleave(slotBits, rmax, numCodewords * CODEWORD_BITS);
+  }
+  const allBytes = bitsToBytes(allBits);
+  const payload = new Uint8Array(numCodewords * messageBytes);
+  for (let c = 0; c < numCodewords; c++) {
+    const message = codec.decode(allBytes.subarray(c * 255, (c + 1) * 255));
+    if (!message) return null;
+    payload.set(message.subarray(0, messageBytes), c * messageBytes);
+  }
+  return payload;
+}
+
+/* ---- browser.js（浏览器辅助） ---- */
+function makeCanvas(width, height) {
+  const canvas = document.createElement('canvas');
+  canvas.width = width; canvas.height = height;
+  return canvas;
+}
+async function loadBitmap(source) {
+  if (typeof createImageBitmap === 'function') {
+    try { return await createImageBitmap(source, { colorSpaceConversion: 'none', premultiplyAlpha: 'none' }); }
+    catch (e) { /* fall through */ }
+  }
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(source);
+    const img = new Image();
+    img.onload = () => { URL.revokeObjectURL(url); resolve(img); };
+    img.onerror = (e) => { URL.revokeObjectURL(url); reject(e); };
+    img.src = url;
+  });
+}
+async function decodeImageFile(file, targetLong) {
+  const bitmap = await loadBitmap(file);
+  let width = bitmap.width, height = bitmap.height;
+  if (targetLong && targetLong > 0) {
+    const scale = targetLong / Math.max(width, height);
+    width = Math.max(1, Math.round(width * scale));
+    height = Math.max(1, Math.round(height * scale));
+  }
+  const canvas = makeCanvas(width, height);
+  const ctx = canvas.getContext('2d');
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
+  ctx.drawImage(bitmap, 0, 0, width, height);
+  if (typeof bitmap.close === 'function') bitmap.close();
+  const image = ctx.getImageData(0, 0, width, height);
+  return { data: image.data, width, height };
+}
+async function decodeImageBytes(bytes, type = 'image/jpeg') {
+  return decodeImageFile(new Blob([bytes], { type }));
+}
+function resizeImageData(imageData, width, height) {
+  const source = makeCanvas(imageData.width, imageData.height);
+  source.getContext('2d').putImageData(new ImageData(imageData.data, imageData.width, imageData.height), 0, 0);
+  const target = makeCanvas(width, height);
+  const ctx = target.getContext('2d');
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
+  ctx.drawImage(source, 0, 0, width, height);
+  const out = ctx.getImageData(0, 0, width, height);
+  return { data: out.data, width, height };
+}
+function imageDataToBlob(imageData, type = 'image/png', quality) {
+  const canvas = makeCanvas(imageData.width, imageData.height);
+  canvas.getContext('2d').putImageData(new ImageData(imageData.data, imageData.width, imageData.height), 0, 0);
+  return new Promise((resolve, reject) => {
+    canvas.toBlob((blob) => (blob ? resolve(blob) : reject(new Error('canvas.toBlob failed'))), type, quality);
+  });
+}
+async function fitSecretJpeg(source, maxBytes, maxLong = 1280) {
+  const cap = Math.max(32, Math.min(maxLong, Math.max(source.width, source.height)));
+  const dims = [640, 560, 480, 400, 320, 256, 192, 128, 96, 64, 48, 32].filter((d) => d <= cap);
+  if (cap > 640 && !dims.includes(cap)) dims.unshift(cap);
+  if (dims.length === 0) dims.push(cap);
+  const qualities = [0.8, 0.65, 0.5, 0.4, 0.32, 0.25];
+  const base = makeCanvas(source.width, source.height);
+  base.getContext('2d').putImageData(new ImageData(source.data, source.width, source.height), 0, 0);
+  for (const maxDim of dims) {
+    let width = source.width, height = source.height;
+    if (Math.max(width, height) > maxDim) {
+      const scale = maxDim / Math.max(width, height);
+      width = Math.max(1, Math.round(width * scale));
+      height = Math.max(1, Math.round(height * scale));
+    }
+    const canvas = makeCanvas(width, height);
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, width, height);
+    ctx.drawImage(base, 0, 0, width, height);
+    for (const quality of qualities) {
+      const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/jpeg', quality));
+      if (blob && blob.size <= maxBytes) {
+        const buffer = await blob.arrayBuffer();
+        return { bytes: new Uint8Array(buffer), width, height, quality };
+      }
+    }
+  }
+  return null;
+}
+async function embedImage(cover, secret, options = {}) {
+  const capacity = capacityBytes(cover.width, cover.height, options);
+  const fitted = await fitSecretJpeg(secret, capacity, (options.secretMax != null ? options.secretMax : 1280));
+  if (!fitted) throw new Error('secret image does not fit into this cover');
+  const payload = buildPayload(fitted.bytes, options);
+  const stego = embed(cover, payload, options);
+  return { stego, secretSize: [fitted.width, fitted.height], quality: fitted.quality, capacity };
+}
+async function extractImage(stego, manualSize) {
+  let working = stego;
+  if (manualSize && manualSize[0] >= 16 && manualSize[1] >= 16) {
+    working = resizeImageData(stego, manualSize[0], manualSize[1]);
+  } else {
+    const detected = detectRulerSize(stego.data, stego.width, stego.height);
+    if (detected && (detected[0] !== stego.width || detected[1] !== stego.height)) {
+      working = resizeImageData(stego, detected[0], detected[1]);
+    }
+  }
+  const result = extract(working);
+  if (!result) return null;
+  const imageData = await decodeImageBytes(result.jpeg, 'image/jpeg');
+  return { imageData, ppb: result.ppb, repeat: result.repeat, nsym: result.nsym };
+}
+
+window.RAC = {
+  capacityBytes, buildPayload, embed, extract,
+  decodeImageFile, decodeImageBytes, resizeImageData, imageDataToBlob, fitSecretJpeg,
+  embedImage, extractImage,
+  encodeRulerBits, decodeRulerBits, buildRulerField, readRulerSize, detectRulerSize,
+  dct2d, idct2d, ReedSolomon,
+  BLOCK_SIZE, MAGIC, CODEWORD_BITS, PAYLOAD_HEADER_BYTES, COEFFICIENT_PAIRS, DEFAULT_OPTIONS
+};
+})();
+</script>
+<script>
+/* ================= 应用逻辑 ================= */
+(function(){
+'use strict';
+var $ = function(s, r){ return (r||document).querySelector(s); };
+var $$ = function(s, r){ return Array.prototype.slice.call((r||document).querySelectorAll(s)); };
+
+/* ---------- 通用工具 ---------- */
+function downloadBlob(blob, name){
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url; a.download = name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(function(){ URL.revokeObjectURL(url); }, 4000);
+}
+function fmtBytes(n){
+  if (n < 1024) return n + ' B';
+  if (n < 1048576) return (n / 1024).toFixed(1) + ' KB';
+  return (n / 1048576).toFixed(2) + ' MB';
+}
+function clamp(v, lo, hi){ return v < lo ? lo : v > hi ? hi : v; }
+function canvasFrom(img){
+  var cv = document.createElement('canvas');
+  cv.width = img.width; cv.height = img.height;
+  cv.getContext('2d').putImageData(new ImageData(img.data, img.width, img.height), 0, 0);
+  return cv;
+}
+function showImageData(container, img){
+  container.innerHTML = '';
+  var cv = document.createElement('canvas');
+  cv.width = img.width; cv.height = img.height;
+  cv.getContext('2d').putImageData(new ImageData(img.data, img.width, img.height), 0, 0);
+  container.appendChild(cv);
+}
+function setStatus(id, msg, ok){
+  var el = $(id);
+  el.textContent = msg;
+  el.className = 'status ' + (ok === false ? 'err' : 'ok');
+}
+function paintRange(el){
+  var v = (el.value - el.min) / (el.max - el.min) * 100;
+  el.style.setProperty('--fill', v + '%');
+}
+function bindRange(id, labelId, fmt){
+  var el = $(id);
+  el.addEventListener('input', function(){
+    paintRange(el);
+    if (labelId) $(labelId).textContent = fmt ? fmt(+el.value) : el.value;
+  });
+  paintRange(el);
+}
+/* 进度条：异步任务期间动画推进，任务结束定格 100% */
+function runProgress(progId){
+  var el = $(progId);
+  el.hidden = false;
+  var bar = el.querySelector('i');
+  var p = 0;
+  var t = setInterval(function(){
+    p = Math.min(p + 3 + Math.random() * 6, 92);
+    bar.style.width = p + '%';
+  }, 130);
+  return function(done){
+    clearInterval(t);
+    bar.style.width = '100%';
+    setTimeout(function(){ el.hidden = true; bar.style.width = '0%'; }, 500);
+    if (done) done();
+  };
+}
+/* 上传卡绑定 */
+function bindDrop(dropSel, fileSel, pvSel, onLoad){
+  var drop = $(dropSel), input = $(fileSel), pv = $(pvSel);
+  function handle(file){
+    if (!file) return;
+    RAC.decodeImageFile(file).then(function(img){
+      pv.width = img.width; pv.height = img.height;
+      pv.getContext('2d').putImageData(new ImageData(img.data, img.width, img.height), 0, 0);
+      pv.hidden = false;
+      drop.classList.add('filled');
+      var ph = drop.querySelector('.ph');
+      if (ph) ph.remove();
+      onLoad(img, file);
+    }).catch(function(e){
+      setStatus('#rac-embed-status', '图片解码失败：' + e.message, false);
+    });
+  }
+  input.addEventListener('change', function(){ handle(input.files[0]); });
+  drop.addEventListener('dragover', function(e){ e.preventDefault(); });
+  drop.addEventListener('drop', function(e){
+    e.preventDefault();
+    if (e.dataTransfer.files.length) handle(e.dataTransfer.files[0]);
+  });
+}
+/* seg 按钮组 */
+function bindSeg(rootSel, onPick){
+  var root = $(rootSel);
+  $$('button', root).forEach(function(b){
+    b.addEventListener('click', function(){
+      $$('button', root).forEach(function(x){ x.classList.remove('on'); });
+      b.classList.add('on');
+      onPick(b.dataset.mode || b.dataset.sub || b.dataset.bg, b);
+    });
+  });
+}
+
+/* ---------- 全局 Tab ---------- */
+$$('#tabs .tab').forEach(function(t){
+  t.addEventListener('click', function(){
+    $$('#tabs .tab').forEach(function(x){ x.classList.remove('active'); });
+    t.classList.add('active');
+    $$('section.view').forEach(function(s){ s.classList.remove('active'); });
+    $('#view-' + t.dataset.view).classList.add('active');
+  });
+});
+
+/* ================= RAC 模块 ================= */
+var RS = {
+  cover: null, secret: null, secretName: '秘密图',
+  stego: null, extractResult: null, simRecovered: null, simAttacked: null,
+  fittedBytes: 0, fittedSize: null
+};
+var customUsed = false;
+
+function currentOptions(){
+  if (customUsed){
+    return {
+      ppb: +$('#rac-ppb').value + 1,
+      repeat: +$('#rac-repeat').value + 1,
+      nsym: +$('#rac-nsym').value + 8,
+      secretMax: 1280
+    };
+  }
+  var v = +$('#rac-tier').value;
+  var o;
+  if (v < 20) o = { ppb:1, repeat:3, nsym:56 };
+  else if (v < 40) o = { ppb:1, repeat:2, nsym:52 };
+  else if (v < 60) o = { ppb:2, repeat:1, nsym:48 };
+  else if (v < 80) o = { ppb:3, repeat:1, nsym:44 };
+  else o = { ppb:4, repeat:1, nsym:40 };
+  o.secretMax = 1280;
+  return o;
+}
+function tierName(v){
+  if (v < 20) return '极限抗压缩';
+  if (v < 40) return '强抗压缩';
+  if (v < 60) return '均衡';
+  if (v < 80) return '高清大容';
+  return '超大容量';
+}
+function updateCapacity(){
+  if (!RS.cover){
+    $('#rac-cap').textContent = '0 B';
+    $('#rac-capbar').style.width = '0%';
+    $('#rac-capinfo').textContent = '选择封面图后计算容量';
+    return;
+  }
+  var cap = RAC.capacityBytes(RS.cover.width, RS.cover.height, currentOptions());
+  $('#rac-cap').textContent = fmtBytes(cap);
+  var ratio = cap ? RS.fittedBytes / cap : 0;
+  $('#rac-capbar').style.width = clamp(ratio * 100, 0, 100) + '%';
+  $('#rac-capinfo').textContent = RS.fittedBytes > 0
+    ? '秘密图将压缩为 ' + (RS.fittedSize ? RS.fittedSize[0] + '×' + RS.fittedSize[1] : '?') +
+      ' · 实际载荷约 ' + fmtBytes(RS.fittedBytes) + ' / 容量 ' + fmtBytes(cap)
+    : '实际载荷：尚未嵌入';
+}
+/* 画质档位 */
+$('#rac-tier').addEventListener('input', function(){
+  customUsed = false;
+  $('#rac-tier-name').textContent = tierName(+this.value);
+  paintRange(this);
+  updateCapacity();
+});
+bindRange('#rac-ppb', '#rac-ppb-v', function(v){ return v + 1; });
+bindRange('#rac-repeat', '#rac-repeat-v', function(v){ return v + 1; });
+bindRange('#rac-nsym', '#rac-nsym-v', function(v){ return v + 8; });
+$$('#rac-ppb, #rac-repeat, #rac-nsym').forEach(function(el){
+  el.addEventListener('input', function(){ customUsed = true; updateCapacity(); });
+});
+$('#rac-enhance').addEventListener('change', function(){
+  $('#rac-enhance-custom').hidden = this.value !== '-1';
+  if (RS.cover) updateCapacity();
+});
+$('#rac-enhance-long').addEventListener('input', function(){ if (RS.cover) updateCapacity(); });
+
+/* 上传：封面 */
+bindDrop('#rac-cover-drop', '#rac-cover-file', '#rac-cover-pv', function(img){
+  RS.cover = img;
+  updateCapacity();
+});
+/* 上传：秘密图 */
+bindDrop('#rac-secret-drop', '#rac-secret-file', '#rac-secret-pv', function(img, file){
+  RS.secret = img;
+  RS.secretName = (file.name || '秘密图').replace(/\.[^.]+$/, '');
+  var cap = RS.cover ? RAC.capacityBytes(RS.cover.width, RS.cover.height, currentOptions()) : 0;
+  if (cap > 0){
+    setStatus('#rac-embed-status', '正在估算载荷…');
+    RAC.fitSecretJpeg(img, cap, 1280).then(function(f){
+      RS.fittedBytes = f ? f.bytes.length : 0;
+      RS.fittedSize = f ? [f.width, f.height] : null;
+      updateCapacity();
+      setStatus('#rac-embed-status', '秘密图已就绪' + (f ? '（压缩后 ' + f.width + '×' + f.height + ' · q' + Math.round(f.quality * 100) + '）' : ''));
+    });
+  } else {
+    RS.fittedBytes = 0; RS.fittedSize = null;
+    updateCapacity();
+  }
+});
+
+/* 嵌入 */
+$('#rac-embed-btn').addEventListener('click', function(){
+  if (!RS.cover || !RS.secret){
+    setStatus('#rac-embed-status', '请先选择封面图和秘密图', false);
+    return;
+  }
+  var btn = this;
+  btn.disabled = true;
+  var stop = runProgress('#rac-embed-progress');
+  setStatus('#rac-embed-status', '正在嵌入…大图需要一点时间');
+  var opts = currentOptions();
+  var enhance = +$('#rac-enhance').value;
+  var cover = RS.cover;
+  if (enhance > 0){
+    var longEdge = enhance > 0 ? enhance : (+$('#rac-enhance-long').value || 2048);
+    var sc = longEdge / Math.max(cover.width, cover.height);
+    cover = RAC.resizeImageData(cover, Math.round(cover.width * sc), Math.round(cover.height * sc));
+  }
+  RAC.embedImage(cover, RS.secret, opts).then(function(res){
+    RS.stego = res.stego;
+    showImageData($('#rac-stego-pv'), res.stego);
+    $('#rac-dl-stego').disabled = false;
+    setStatus('#rac-embed-status',
+      '嵌入完成 · 秘密图 ' + res.secretSize[0] + '×' + res.secretSize[1] +
+      '（JPEG q' + Math.round(res.quality * 100) + '）· 隐写图 ' + res.stego.width + '×' + res.stego.height,
+      true);
+    stop();
+    btn.disabled = false;
+  }).catch(function(e){
+    setStatus('#rac-embed-status', '嵌入失败：' + e.message, false);
+    stop();
+    btn.disabled = false;
+  });
+});
+
+/* 保存 / 下载隐写图 */
+function saveStego(){
+  if (!RS.stego) return;
+  RAC.imageDataToBlob(RS.stego, 'image/png').then(function(b){
+    downloadBlob(b, 'rac-stego-' + RS.stego.width + 'x' + RS.stego.height + '.png');
+  });
+}
+$('#rac-save-stego').addEventListener('click', saveStego);
+$('#rac-dl-stego').addEventListener('click', saveStego);
+
+/* 重置（嵌入） */
+$('#rac-reset-embed').addEventListener('click', function(){
+  RS.cover = null; RS.secret = null; RS.stego = null;
+  RS.fittedBytes = 0; RS.fittedSize = null;
+  ['#rac-cover-file', '#rac-secret-file'].forEach(function(s){ $(s).value = ''; });
+  $('#rac-cover-pv').hidden = true; $('#rac-secret-pv').hidden = true;
+  $('#rac-cover-drop').classList.remove('filled');
+  $('#rac-secret-drop').classList.remove('filled');
+  ['#rac-stego-pv', '#rac-sim-attacked', '#rac-sim-recovered'].forEach(function(s){
+    $(s).innerHTML = '<span class="empty">' + (s.indexOf('stego') >= 0 ? '尚未嵌入' : s.indexOf('attacked') >= 0 ? '传输后的图像' : '提取结果 · 恢复的秘密图') + '</span>';
+  });
+  $('#rac-dl-stego').disabled = true;
+  $('#rac-save-sim').disabled = true;
+  $('#rac-capinfo').textContent = '实际载荷：尚未嵌入';
+  updateCapacity();
+});
+
+/* 通道模拟 */
+$('#rac-sim-btn').addEventListener('click', function(){
+  if (!RS.stego){
+    setStatus('#rac-sim-status', '请先完成嵌入', false);
+    return;
+  }
+  var btn = this; btn.disabled = true;
+  var stop = runProgress('#rac-embed-progress');
+  setStatus('#rac-sim-status', '正在模拟通道…');
+  var scale = +$('#rac-scale').value;
+  var q = +$('#rac-quality').value;
+  var w = Math.max(1, Math.round(RS.stego.width * scale));
+  var h = Math.max(1, Math.round(RS.stego.height * scale));
+  RAC.imageDataToBlob(RAC.resizeImageData(RS.stego, w, h), 'image/jpeg', q / 100)
+    .then(function(blob){ return RAC.decodeImageFile(blob); })
+    .then(function(attacked){
+      RS.simAttacked = attacked;
+      showImageData($('#rac-sim-attacked'), attacked);
+      return RAC.extractImage(attacked);
+    })
+    .then(function(out){
+      if (!out){
+        setStatus('#rac-sim-status', '通道模拟后未能提取（缩放或重压缩过强，可调低档位）', false);
+        stop(); btn.disabled = false;
+        return;
+      }
+      RS.simRecovered = out.imageData;
+      showImageData($('#rac-sim-recovered'), out.imageData);
+      $('#rac-save-sim').disabled = false;
+      setStatus('#rac-sim-status',
+        '提取成功 · 参数 ppb=' + out.ppb + ' repeat=' + out.repeat + ' nsym=' + out.nsym, true);
+      stop(); btn.disabled = false;
+    })
+    .catch(function(e){
+      setStatus('#rac-sim-status', '模拟失败：' + e.message, false);
+      stop(); btn.disabled = false;
+    });
+});
+$('#rac-save-sim').addEventListener('click', function(){
+  if (RS.simRecovered){
+    RAC.imageDataToBlob(RS.simRecovered, 'image/png').then(function(b){
+      downloadBlob(b, 'rac-recovered-sim.png');
+    });
+  }
+});
+
+/* 提取 */
+bindDrop('#rac-stego-drop', '#rac-stego-file', '#rac-stego-pv', function(img){
+  RS.extractResult = null;
+  $('#rac-dl-extracted').disabled = true;
+  $('#rac-extract-pv').innerHTML = '<span class="empty">尚未提取</span>';
+});
+$('#rac-extract-btn').addEventListener('click', function(){
+  var file = $('#rac-stego-file').files[0];
+  if (!file){
+    setStatus('#rac-extract-status', '请先选择隐写图', false);
+    return;
+  }
+  var btn = this; btn.disabled = true;
+  var stop = runProgress('#rac-embed-progress');
+  setStatus('#rac-extract-status', '正在提取…');
+  RAC.decodeImageFile(file).then(function(img){
+    var mw = +$('#rac-manual-w').value, mh = +$('#rac-manual-h').value;
+    var manual = (mw >= 16 && mh >= 16) ? [mw, mh] : undefined;
+    return RAC.extractImage(img, manual);
+  }).then(function(out){
+    if (!out){
+      setStatus('#rac-extract-status', '未能提取：这张图里没有可识别的 RAC 隐写，或已被破坏', false);
+      stop(); btn.disabled = false;
+      return;
+    }
+    RS.extractResult = out.imageData;
+    showImageData($('#rac-extract-pv'), out.imageData);
+    $('#rac-dl-extracted').disabled = false;
+    setStatus('#rac-extract-status',
+      '提取成功 · 秘密图 ' + out.imageData.width + '×' + out.imageData.height +
+      ' · ppb=' + out.ppb + ' repeat=' + out.repeat + ' nsym=' + out.nsym, true);
+    stop(); btn.disabled = false;
+  }).catch(function(e){
+    setStatus('#rac-extract-status', '提取失败：' + e.message, false);
+    stop(); btn.disabled = false;
+  });
+});
+function saveExtracted(){
+  if (RS.extractResult){
+    RAC.imageDataToBlob(RS.extractResult, 'image/png').then(function(b){
+      downloadBlob(b, 'rac-extracted-' + RS.extractResult.width + 'x' + RS.extractResult.height + '.png');
+    });
+  }
+}
+$('#rac-save-extracted').addEventListener('click', saveExtracted);
+$('#rac-dl-extracted').addEventListener('click', saveExtracted);
+$('#rac-reset-extract').addEventListener('click', function(){
+  $('#rac-stego-file').value = '';
+  $('#rac-stego-pv').hidden = true;
+  $('#rac-stego-drop').classList.remove('filled');
+  $('#rac-extract-pv').innerHTML = '<span class="empty">尚未提取</span>';
+  $('#rac-dl-extracted').disabled = true;
+  RS.extractResult = null;
+  setStatus('#rac-extract-status', '');
+});
+
+/* RAC 子 Tab */
+bindSeg('#rac-subtabs', function(sub){
+  $('#rac-embed').classList.toggle('active', sub === 'embed');
+  $('#rac-extract').classList.toggle('active', sub === 'extract');
+});
+
+/* ================= 幻影坦克 ================= */
+var PT = { cover: null, secret: null, result: null, mode: 'gray', bg: 'white' };
+/* 两图对齐到同一画布（contain 居中） */
+function alignToCommon(a, b){
+  var W = Math.max(a.width, b.width), H = Math.max(a.height, b.height);
+  var cv = document.createElement('canvas');
+  cv.width = W; cv.height = H;
+  var ctx = cv.getContext('2d');
+  function fit(img){
+    var s = Math.min(W / img.width, H / img.height);
+    var w = Math.round(img.width * s), h = Math.round(img.height * s);
+    ctx.drawImage(canvasFrom(img), (W - w) / 2, (H - h) / 2, w, h);
+  }
+  fit(a);
+  var da = ctx.getImageData(0, 0, W, H);
+  ctx.clearRect(0, 0, W, H);
+  fit(b);
+  var db = ctx.getImageData(0, 0, W, H);
+  return [
+    { data: da.data, width: W, height: H },
+    { data: db.data, width: W, height: H }
+  ];
+}
+function makePhantom(ta, tb, mode){
+  var n = ta.data.length / 4;
+  var out = new Uint8ClampedArray(ta.data.length);
+  for (var i = 0; i < n; i++){
+    var o = i * 4;
+    if (mode === 'gray'){
+      var T = 0.299 * ta.data[o] + 0.587 * ta.data[o + 1] + 0.114 * ta.data[o + 2];
+      var I = 0.299 * tb.data[o] + 0.587 * tb.data[o + 1] + 0.114 * tb.data[o + 2];
+      var a = (I - T) / 255 + 1;
+      a = clamp(a, 0.05, 1);
+      var X = I / a;
+      var v = Math.round(clamp(X, 0, 255));
+      out[o] = v; out[o + 1] = v; out[o + 2] = v;
+      out[o + 3] = Math.round(a * 255);
+    } else {
+      for (var c = 0; c < 3; c++){
+        var Tc = ta.data[o + c], Ic = tb.data[o + c];
+        var ac = (Ic - Tc) / 255 + 1;
+        ac = clamp(ac, 0.05, 1);
+        out[o + c] = Math.round(clamp(Ic / ac, 0, 255));
+      }
+      out[o + 3] = Math.round(clamp(Math.min(ta.data[o + 3], tb.data[o + 3]) / 255, 0, 1) * 255);
+    }
+  }
+  return { data: out, width: ta.width, height: ta.height };
+}
+function renderPhantom(){
+  var img = PT.result;
+  if (!img) return;
+  var cv = document.createElement('canvas');
+  cv.width = img.width; cv.height = img.height;
+  var ctx = cv.getContext('2d');
+  if (PT.bg === 'white'){ ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, cv.width, cv.height); }
+  else if (PT.bg === 'black'){ ctx.fillStyle = '#000000'; ctx.fillRect(0, 0, cv.width, cv.height); }
+  else {
+    var s = 12;
+    for (var y = 0; y < cv.height; y += s) for (var x = 0; x < cv.width; x += s){
+      ctx.fillStyle = ((x / s + y / s) % 2 === 0) ? '#e8e8e8' : '#ffffff';
+      ctx.fillRect(x, y, s, s);
+    }
+  }
+  ctx.drawImage(canvasFrom(img), 0, 0);
+  var box = $('#pt-pv');
+  box.innerHTML = '';
+  box.appendChild(cv);
+}
+bindDrop('#pt-cover-drop', '#pt-cover-file', '#pt-cover-pv', function(img){ PT.cover = img; });
+bindDrop('#pt-secret-drop', '#pt-secret-file', '#pt-secret-pv', function(img){ PT.secret = img; });
+bindSeg('#pt-mode', function(mode){ PT.mode = mode; });
+bindSeg('#pt-bg', function(bg){ PT.bg = bg; renderPhantom(); });
+$('#pt-gen').addEventListener('click', function(){
+  if (!PT.cover || !PT.secret){
+    setStatus('#pt-status', '请先选择表图和里图', false);
+    return;
+  }
+  setStatus('#pt-status', '正在生成…');
+  setTimeout(function(){
+    var pair = alignToCommon(PT.cover, PT.secret);
+    PT.result = makePhantom(pair[0], pair[1], PT.mode);
+    renderPhantom();
+    $('#pt-dl').disabled = false;
+    setStatus('#pt-status', '生成完成 · ' + PT.result.width + '×' + PT.result.height +
+      (PT.mode === 'gray' ? '（灰度模式，白底/黑底精确显像）' : '（彩色模式，若表图比里图暗处会有轻微偏差）'), true);
+  }, 30);
+});
+$('#pt-dl').addEventListener('click', function(){
+  if (PT.result){
+    RAC.imageDataToBlob(PT.result, 'image/png').then(function(b){
+      downloadBlob(b, 'phantom-tank-' + PT.result.width + 'x' + PT.result.height + '.png');
+    });
+  }
+});
+
+/* ================= 光棱坦克 ================= */
+var PR = { cover: null, secret: null, result: null, wa: 0.55, wb: 0.22, ex: 1.0 };
+bindDrop('#pr-cover-drop', '#pr-cover-file', '#pr-cover-pv', function(img){ PR.cover = img; });
+bindDrop('#pr-secret-drop', '#pr-secret-file', '#pr-secret-pv', function(img){ PR.secret = img; });
+bindRange('#pr-wa', '#pr-wa-v', function(v){ return (v / 100).toFixed(2); });
+bindRange('#pr-wb', '#pr-wb-v', function(v){ return (v / 100).toFixed(2); });
+bindRange('#pr-ex', '#pr-ex-v', function(v){ return (v / 10).toFixed(1) + '×'; });
+$('#pr-wa').addEventListener('input', function(){ PR.wa = +this.value / 100; });
+$('#pr-wb').addEventListener('input', function(){ PR.wb = +this.value / 100; });
+$('#pr-ex').addEventListener('input', function(){ PR.ex = +this.value / 10; renderPrism(); });
+function makePrism(ta, tb, wa, wb){
+  var n = ta.data.length / 4;
+  var out = new Uint8ClampedArray(ta.data.length);
+  for (var i = 0; i < n; i++){
+    var o = i * 4;
+    for (var c = 0; c < 3; c++){
+      out[o + c] = Math.round(clamp(wa * ta.data[o + c] + wb * tb.data[o + c], 0, 255));
+    }
+    out[o + 3] = 255;
+  }
+  return { data: out, width: ta.width, height: ta.height };
+}
+function renderPrism(){
+  var img = PR.result;
+  if (!img) return;
+  var k = PR.ex;
+  var n = img.width * img.height;
+  var px = new Uint8ClampedArray(n * 4);
+  for (var i = 0; i < n * 4; i++){
+    px[i] = (i % 4 === 3) ? 255 : Math.round(clamp(img.data[i] * k, 0, 255));
+  }
+  var cv = document.createElement('canvas');
+  cv.width = img.width; cv.height = img.height;
+  cv.getContext('2d').putImageData(new ImageData(px, img.width, img.height), 0, 0);
+  var box = $('#pr-pv');
+  box.innerHTML = '';
+  box.appendChild(cv);
+}
+$('#pr-gen').addEventListener('click', function(){
+  if (!PR.cover || !PR.secret){
+    setStatus('#pr-status', '请先选择表图和隐藏图', false);
+    return;
+  }
+  setStatus('#pr-status', '正在合成…');
+  setTimeout(function(){
+    var pair = alignToCommon(PR.cover, PR.secret);
+    PR.result = makePrism(pair[0], pair[1], PR.wa, PR.wb);
+    renderPrism();
+    $('#pr-dl').disabled = false;
+    setStatus('#pr-status', '合成完成 · ' + PR.result.width + '×' + PR.result.height +
+      ' · 拖动曝光滑块：1.0× 看表图，拉高（≥3×）看隐藏图', true);
+  }, 30);
+});
+$('#pr-dl').addEventListener('click', function(){
+  if (PR.result){
+    RAC.imageDataToBlob(PR.result, 'image/png').then(function(b){
+      downloadBlob(b, 'prism-tank-' + PR.result.width + 'x' + PR.result.height + '.png');
+    });
+  }
+});
+
+/* ================= 图片混淆（Arnold 置乱） ================= */
+var SC = { img: null, n: 0, orig: null, result: null, restored: null };
+bindDrop('#sc-img-drop', '#sc-img-file', '#sc-img-pv', function(img){
+  SC.img = img;
+  SC.orig = { w: img.width, h: img.height };
+  SC.n = Math.max(img.width, img.height);
+  SC.result = null; SC.restored = null;
+  $('#sc-pv').innerHTML = '<span class="empty">加密后在这里预览</span>';
+  $('#sc-dl').disabled = true;
+  $('#sc-decrypt').disabled = true;
+  setStatus('#sc-status', '');
+});
+bindRange('#sc-it', '#sc-it-v', function(v){ return v; });
+function padSquare(img){
+  var n = Math.max(img.width, img.height);
+  var cv = document.createElement('canvas');
+  cv.width = n; cv.height = n;
+  var ctx = cv.getContext('2d');
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, n, n);
+  ctx.drawImage(canvasFrom(img), 0, 0);
+  return ctx.getImageData(0, 0, n, n).data;
+}
+function arnold(src, n, reverse){
+  var mod = function(a){ a %= n; return a < 0 ? a + n : a; };
+  var out = new Uint8ClampedArray(src.length);
+  for (var y = 0; y < n; y++){
+    for (var x = 0; x < n; x++){
+      var nx, ny;
+      if (!reverse){ nx = mod(x + y); ny = mod(x + 2 * y); }
+      else { nx = mod(2 * x - y); ny = mod(-x + y); }
+      var so = (y * n + x) * 4, to = (ny * n + nx) * 4;
+      out[to] = src[so]; out[to + 1] = src[so + 1]; out[to + 2] = src[so + 2]; out[to + 3] = src[so + 3];
+    }
+  }
+  return out;
+}
+function cropTo(imgData, w, h){
+  var out = new Uint8ClampedArray(w * h * 4);
+  var cv = document.createElement('canvas');
+  cv.width = imgData.width; cv.height = imgData.height;
+  cv.getContext('2d').putImageData(new ImageData(imgData.data, imgData.width, imgData.height), 0, 0);
+  var g = document.createElement('canvas');
+  g.width = w; g.height = h;
+  g.getContext('2d').drawImage(cv, 0, 0);
+  var d = g.getContext('2d').getImageData(0, 0, w, h).data;
+  out.set(d);
+  return { data: out, width: w, height: h };
+}
+$('#sc-encrypt').addEventListener('click', function(){
+  if (!SC.img){
+    setStatus('#sc-status', '请先选择图片', false);
+    return;
+  }
+  var it = +$('#sc-it').value;
+  setStatus('#sc-status', '正在置乱…');
+  setTimeout(function(){
+    var square = padSquare(SC.img);
+    for (var k = 0; k < it; k++) square = arnold(square, SC.n, false);
+    SC.result = { data: square, width: SC.n, height: SC.n };
+    showImageData($('#sc-pv'), SC.result);
+    $('#sc-dl').disabled = false;
+    $('#sc-decrypt').disabled = false;
+    setStatus('#sc-status', '置乱完成 · 迭代 ' + it + ' 次 · ' + SC.n + '×' + SC.n + '（密钥：' + it + '）', true);
+  }, 30);
+});
+$('#sc-decrypt').addEventListener('click', function(){
+  if (!SC.result){
+    setStatus('#sc-status', '请先加密', false);
+    return;
+  }
+  var it = +$('#sc-it').value;
+  setStatus('#sc-status', '正在还原…');
+  setTimeout(function(){
+    var square = SC.result.data;
+    for (var k = 0; k < it; k++) square = arnold(square, SC.n, true);
+    SC.restored = cropTo({ data: square, width: SC.n, height: SC.n }, SC.orig.w, SC.orig.h);
+    showImageData($('#sc-pv'), SC.restored);
+    setStatus('#sc-status', '还原完成 · 已裁回原尺寸 ' + SC.orig.w + '×' + SC.orig.h, true);
+  }, 30);
+});
+$('#sc-dl').addEventListener('click', function(){
+  var img = SC.restored || SC.result;
+  if (img){
+    RAC.imageDataToBlob(img, 'image/png').then(function(b){
+      downloadBlob(b, 'scrambled-' + img.width + 'x' + img.height + '.png');
+    });
+  }
+});
+
+/* 初始化：档位标签 */
+$('#rac-tier-name').textContent = tierName(50);
+paintRange($('#rac-tier'));
+})();
+</script>
+
+</body>
+</html>
