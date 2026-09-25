@@ -25,8 +25,12 @@ jobs:
           distribution: temurin
           java-version: '21'
 
+      # runner 预装 Android SDK；自动接受 license（AGP 会按需下载 platform/build-tools）
       - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
+        run: |
+          echo "ANDROID_HOME=/usr/local/lib/android/sdk" >> "$GITHUB_ENV"
+          echo "ANDROID_SDK_ROOT=/usr/local/lib/android/sdk" >> "$GITHUB_ENV"
+          yes | /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager --licenses >/dev/null 2>&1 || true
 
       - name: Build Release APK
         working-directory: android-compose
