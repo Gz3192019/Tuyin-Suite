@@ -39,8 +39,10 @@ jobs:
       - name: Determine version
         id: ver
         run: |
-          VER="${GITHUB_REF_NAME}"
-          if [ -z "$VER" ]; then
+          # tag 推送（v*）时用 tag 名；手动触发时读 build.gradle.kts 的 versionName
+          if [ "${GITHUB_REF_TYPE}" = "tag" ]; then
+            VER="${GITHUB_REF_NAME}"
+          else
             VER=$(grep -oP 'versionName = "\K[^"]+' app/build.gradle.kts | head -1)
           fi
           echo "ver=$VER" >> "$GITHUB_OUTPUT"
