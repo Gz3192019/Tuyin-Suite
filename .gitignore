@@ -1,0 +1,21 @@
+# Gradle / Android
+build/
+.gradle/
+local.properties
+.idea/
+*.iml
+.kotlin/
+
+# 产物
+*.apk
+*.aab
+
+# 本地临时脚本与截图（开发机产物）
+_*.py
+_*.txt
+*.png
+!android-compose/app/src/main/res/**/*.png
+
+# 系统文件
+.DS_Store
+Thumbs.db
