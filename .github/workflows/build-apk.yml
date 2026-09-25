@@ -38,6 +38,7 @@ jobs:
 
       - name: Determine version
         id: ver
+        working-directory: android-compose
         run: |
           # tag 推送（v*）时用 tag 名；手动触发时读 build.gradle.kts 的 versionName
           if [ "${GITHUB_REF_TYPE}" = "tag" ]; then
