@@ -1,0 +1,59 @@
+name: Build & Release APK
+
+# 触发方式：
+# 1) 推送 tag v*（如 v1.0.0）→ 自动构建并发布 Release
+# 2) 手动触发（Actions 页面 Run workflow）→ 使用 build.gradle.kts 中的 versionName 发布
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Build Release APK
+        working-directory: android-compose
+        run: ./gradlew assembleRelease --no-daemon
+
+      - name: Determine version
+        id: ver
+        run: |
+          VER="${GITHUB_REF_NAME}"
+          if [ -z "$VER" ]; then
+            VER=$(grep -oP 'versionName = "\K[^"]+' app/build.gradle.kts | head -1)
+          fi
+          echo "ver=$VER" >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VER="${{ steps.ver.outputs.ver }}"
+          APK="android-compose/app/build/outputs/apk/release/app-release.apk"
+          NOTES="自动构建自 GitHub Actions（Tuyin-Suite $VER）。更新日志详见仓库 RELEASE_NOTES.md"
+          # 若该版本已存在 Release 则追加资产，否则创建
+          if gh release view "$VER" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release upload "$VER" "$APK#Tuyin-Suite-$VER.apk" --repo "$GITHUB_REPOSITORY" --clobber
+          else
+            gh release create "$VER" "$APK#Tuyin-Suite-$VER.apk" \
+              --repo "$GITHUB_REPOSITORY" \
+              --title "Tuyin-Suite $VER" \
+              --notes "$NOTES"
+          fi

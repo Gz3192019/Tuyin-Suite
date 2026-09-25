@@ -13,13 +13,32 @@ android {
         applicationId = "com.setgo.tank"
         minSdk = 24
         targetSdk = 37
-        versionCode = 42
-        versionName = "v0.1.39.beat"
+        versionCode = 43
+        versionName = "v1.0.0"
     }
 
     buildFeatures {
         compose = true
         buildConfig = true
+    }
+
+    signingConfigs {
+        create("tuyin") {
+            storeFile = rootProject.file("keystore/debug.keystore")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
+        }
+    }
+
+    buildTypes {
+        release {
+            isMinifyEnabled = false
+            signingConfig = signingConfigs.getByName("tuyin")
+        }
+        debug {
+            signingConfig = signingConfigs.getByName("tuyin")
+        }
     }
 
     compileOptions {
