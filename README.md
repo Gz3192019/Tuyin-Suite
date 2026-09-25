@@ -1,51 +1,108 @@
-# Tuyin-Suite · 图隐套件（StegoTank）
+<div align="center">
 
-> 把多张图片，藏进一张图片 —— 图片隐写算法聚合的原生 Android 应用。
+# 🛡️ Tuyin-Suite · 图隐套件（StegoTank）
 
-![platform](https://img.shields.io/badge/Platform-Android%207.0%2B-3DDC84)
-![lang](https://img.shields.io/badge/Language-Kotlin%20%2B%20Compose-7F52FF)
-![license](https://img.shields.io/badge/License-GPL--3.0--or--later-blue)
+### 把多张图片，藏进一张图片 —— 图片隐写算法聚合的原生 Android 应用
 
-图隐套件是一个把 **RAC 图隐 / 幻影坦克 / 光棱坦克 / 图片混淆** 四类图片隐写与混淆算法整合进一个原生 Android 应用的聚合项目。所有处理均在本地完成，图片不会上传到任何服务器。
+![Platform](https://img.shields.io/badge/Platform-Android%207.0%2B-3DDC84?style=flat-square)
+![Language](https://img.shields.io/badge/Language-Kotlin%20%2B%20Compose-7F52FF?style=flat-square)
+![License](https://img.shields.io/badge/License-GPL--3.0--or--later-blue?style=flat-square)
+![Release](https://img.shields.io/github/v/release/Gz3192019/Tuyin-Suite?style=flat-square&color=orange)
+![Downloads](https://img.shields.io/github/downloads/Gz3192019/Tuyin-Suite/total?style=flat-square&color=success)
+![Stars](https://img.shields.io/github/stars/Gz3192019/Tuyin-Suite?style=flat-square)
+
+[**📥 最新版 APK 下载**](https://github.com/Gz3192019/Tuyin-Suite/releases/latest) ·
+[**🚀 快速开始**](#-快速开始) ·
+[**📖 功能介绍**](#-功能介绍) ·
+[**🤝 贡献**](#-贡献)
+
+</div>
+
+---
+
+## ✨ 这是什么？
+
+**图隐套件** 把 **RAC 图隐 / 幻影坦克 / 光棱坦克 / 图片混淆** 四类图片隐写与混淆算法整合进一个原生 Android 应用。所有处理均在本地完成，图片不会上传到任何服务器 —— 你的隐私只属于你。
 
 本仓库是对以下开源项目的 **App 化重构**（Compose + Miuix 原生实现，无 WebView），算法与实现致敬原作者：
 
 | 模块 | 上游项目 | 原作者 |
 | --- | --- | --- |
-| RAC 图隐（一张图藏进另一张图） | [rac-hide](https://github.com/tuoPzf/rac-hide) | [tuoPzf](https://github.com/tuoPzf) |
-| 光棱坦克（棱镜级光学变换隐写） | [Mirage_Decode](https://github.com/TankFactory/Mirage_Decode) | TankFactory |
-| 幻影坦克（同图随观察方式呈现不同画面） | [Mirage_Colored](https://github.com/TankFactory/Mirage_Colored) | TankFactory |
-| 图片混淆（Arnold 置乱等 8+ 算法） | [ObfuscationUtils](https://github.com/2195517546/ObfuscationUtils) | 2195517546 |
+| RAC 图隐 | [rac-hide](https://github.com/tuoPzf/rac-hide) | [tuoPzf](https://github.com/tuoPzf) |
+| 光棱坦克 | [Mirage_Decode](https://github.com/TankFactory/Mirage_Decode) | TankFactory |
+| 幻影坦克 | [Mirage_Colored](https://github.com/TankFactory/Mirage_Colored) | TankFactory |
+| 图片混淆 | [ObfuscationUtils](https://github.com/2195517546/ObfuscationUtils) | 2195517546 |
 
 UI 组件基于 [compose-miuix-ui/miuix](https://github.com/compose-miuix-ui/miuix)，过渡动画参考 [ReSukiSU/ReSukiSU](https://github.com/ReSukiSU/ReSukiSU) 与 [KiminonawaResa/HyperLight](https://github.com/KiminonawaResa/HyperLight)。
 
-## 功能
+---
 
-| 模块 | 说明 |
+## 📱 功能介绍
+
+<div align="center">
+
+| | | | |
+|:---:|:---:|:---:|:---:|
+| <img src="https://raw.githubusercontent.com/Gz3192019/Tuyin-Suite/main/android-compose/app/src/main/res/drawable-nodpi/avatar_rac.png" width="80" height="80"><br>**RAC 图隐** | <img src="https://raw.githubusercontent.com/Gz3192019/Tuyin-Suite/main/android-compose/app/src/main/res/drawable-nodpi/avatar_phantom.png" width="80" height="80"><br>**幻影坦克** | <img src="https://raw.githubusercontent.com/Gz3192019/Tuyin-Suite/main/android-compose/app/src/main/res/drawable-nodpi/avatar_prism.png" width="80" height="80"><br>**光棱坦克** | <img src="https://raw.githubusercontent.com/Gz3192019/Tuyin-Suite/main/android-compose/app/src/main/res/drawable-nodpi/avatar_arnold.png" width="80" height="80"><br>**图片混淆** |
+
+</div>
+
+### 🎭 RAC 图隐
+把一张秘密图片嵌入到一张封面图片里，从肉眼看只有封面图，但通过提取算法可以还原出秘密图。
+- 封面 + 秘密图嵌入 / 提取
+- 画质与容量实时预计算
+- 封面增强、自定义参数调节
+- 通道模拟（缩放 + JPEG 重压缩验证鲁棒性）
+
+### 👻 幻影坦克
+同一张图片，在白底和黑底下呈现完全不同的画面 —— 经典的"一图两看"效果。
+- 灰度 / 彩色双模式
+- 白底 / 黑底 / 棋盘格实时预览
+
+### 🔮 光棱坦克
+通过双权重光学变换合成，在特定光照/滤色条件下显影出隐藏画面。
+- 双权重合成，显影阈值与曝光调节
+- 6 种显影覆盖模式
+
+### 🌀 图片混淆
+对图片置乱加密，没有密钥就无法还原原始画面。
+- Arnold 置乱 / 分块 / 行加密 / 行列 / 排序 / 随机等 8+ 算法
+- 多档质量可选
+
+---
+
+## 🌟 特性亮点
+
+- 🎨 **原生 Compose + Miuix**（MIUI 风格），无 WebView，丝滑流畅
+- 🎨 **主题色全局联动**：莫奈取色（跟随壁纸）+ 6 种手动色，卡片 / 背景 / 导航同步变色
+- 🌓 **明暗模式**跟随系统
+- 👆 **预测性返回**手势 + 跟手过渡动画
+- 🌏 **三语界面**：简体 / 繁体 / English
+- 💾 设置持久化（SharedPreferences）
+- 🔒 **全部本地计算**，无任何网络请求，不上传图片
+
+---
+
+## 🚀 快速开始
+
+### 下载安装
+
+前往 [Releases 页面](https://github.com/Gz3192019/Tuyin-Suite/releases/latest) 下载最新 APK，直接安装即可。
+
+> 系统要求：Android 7.0（API 24）及以上
+
+### 应用信息
+
+| 项 | 值 |
 | --- | --- |
-| RAC 图隐 | 封面 + 秘密图嵌入 / 提取；画质与容量实时预计算；封面增强；自定义参数；通道模拟（缩放 + JPEG 重压缩验证鲁棒性） |
-| 幻影坦克 | 灰度 / 彩色模式，白底 / 黑底 / 棋盘格预览 |
-| 光棱坦克 | 双权重合成，显影阈值与曝光调节，6 种显影覆盖 |
-| 图片混淆 | Arnold 置乱 / 分块 / 行加密 / 行列 / 排序 / 随机等 8+ 算法，含质量档位 |
+| 包名 | `com.setgo.tank` |
+| 应用名 | StegoTank / 图隐套件 |
+| 当前版本 | `v1.0.0`（versionCode 43） |
+| 历史版本 | `v0.1.x.beat` 开发版（APK 与更新日志见 [Releases](https://github.com/Gz3192019/Tuyin-Suite/releases)） |
 
-## 特性
+---
 
-- **原生 Compose + Miuix**（MIUI 风格），无 WebView
-- **主题色全局联动**：莫奈取色（跟随壁纸）+ 6 种手动色，卡片 / 背景 / 导航同步变色
-- **明暗模式**跟随系统
-- **预测性返回**手势 + 跟手过渡动画
-- **三语界面**：简体 / 繁体 / English
-- 主题、语言、预返回设置持久化（SharedPreferences）
-- 全部本地计算，无任何网络请求，不上传图片
-
-## 应用信息
-
-- 包名：`com.setgo.tank`
-- 应用名：StegoTank / 图隐套件
-- 当前正式版：`v1.0.0`（versionCode 43）
-- 历史版本：`v0.1.x.beat` 开发版（每个版本递增 versionCode，APK 与更新日志见 [Releases](https://github.com/Gz3192019/Tuyin-Suite/releases)）
-
-## 构建
+## 🔧 从源码构建
 
 ### 方式一：GitHub Actions（推荐）
 
@@ -65,14 +122,22 @@ cd android-compose
 # 产物：app/build/outputs/apk/release/app-release.apk
 ```
 
-## 隐私与安全
+---
 
-隐写 ≠ 加密。本工具用于研究、版权水印与合法隐蔽通信，不具备密码学意义上的保密性；请勿用于保护真正敏感的信息。详见 [SECURITY.md](SECURITY.md)。
+## 🔒 隐私与安全
 
-## 贡献
+> ⚠️ **隐写 ≠ 加密**
 
-欢迎提交 Issue 与 PR，请阅读 [CONTRIBUTING.md](CONTRIBUTING.md) 与 [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)。
+本工具用于研究、版权水印与合法隐蔽通信，不具备密码学意义上的保密性；请勿用于保护真正敏感的信息。详见 [SECURITY.md](SECURITY.md)。
 
-## 许可
+---
+
+## 🤝 贡献
+
+欢迎提交 Issue 与 PR！请先阅读 [CONTRIBUTING.md](CONTRIBUTING.md) 与 [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)。
+
+---
+
+## 📄 许可
 
 [GPL-3.0-or-later](LICENSE) · 尊重各上游项目的开源许可与原作者署名。
