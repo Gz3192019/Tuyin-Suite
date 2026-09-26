@@ -8,7 +8,6 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -137,23 +136,14 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun AppTheme(content: @Composable () -> Unit) {
-    // 明暗联动：suiteDark 供全局 SuBg/SuTitle/SuSub 使用（背景/文字/卡片整体变色）
-    val sysDark = isSystemInDarkTheme()
-    suiteDark = when (suiteThemeMode) {
-        SuiteThemeMode.Dark -> true
-        SuiteThemeMode.Light -> false
-        SuiteThemeMode.System -> sysDark
-    }
-    // 主题联动设置页：莫奈取色 / 主题模式 / 调色板样式 / 颜色规格 / 主题色全部联动
+    // 深色模式写死：始终浅色。瓷白底 + 主题色染色是本产品特色，不做深色适配（不跟随系统深浅）
+    suiteDark = false
+    // 主题联动设置页：莫奈取色 / 调色板样式 / 颜色规格 / 主题色全部联动
     // 莫奈取色：直接读系统动态色种子（Android 12+ system_accent1_500）作为 keyColor，
     // 走同一条主题链路 → 导航/按钮/卡片/背景整体联动（ReSukiSU 同款方案，比 miuix MonetSystem 可靠）
     val context = LocalContext.current
-    val controller = remember(suiteAccent, suiteMonet, suiteThemeMode, suitePaletteStyle, suiteColorSpec) {
-        val mode = when {
-            suiteThemeMode == SuiteThemeMode.Light -> ColorSchemeMode.Light
-            suiteThemeMode == SuiteThemeMode.Dark -> ColorSchemeMode.Dark
-            else -> ColorSchemeMode.System
-        }
+    val controller = remember(suiteAccent, suiteMonet, suitePaletteStyle, suiteColorSpec) {
+        val mode = ColorSchemeMode.Light
         val effectiveKey = if (suiteMonet) Color(systemAccentSeed(context)) else suiteAccent
         val palette = when (suitePaletteStyle) {
             SuitePaletteStyle.TonalSpot -> ThemePaletteStyle.TonalSpot
@@ -178,7 +168,7 @@ fun AppTheme(content: @Composable () -> Unit) {
         }
     }
     // 主题状态持久化：任何主题/语言/预返回变化都落盘
-    LaunchedEffect(suiteAccent, suiteMonet, suiteThemeMode, suitePaletteStyle, suiteColorSpec, suiteLang, suiteBackGesture) {
+    LaunchedEffect(suiteAccent, suiteMonet, suitePaletteStyle, suiteColorSpec, suiteLang, suiteBackGesture) {
         saveThemePrefs(context)
     }
     MiuixTheme(
