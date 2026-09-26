@@ -33,12 +33,12 @@ jobs:
           yes | /usr/local/lib/android/sdk/cmdline-tools/latest/bin/sdkmanager --licenses >/dev/null 2>&1 || true
 
       - name: Build Release APK
-        working-directory: android-compose
-        run: ./gradlew assembleRelease --no-daemon
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleRelease --no-daemon
 
       - name: Determine version
         id: ver
-        working-directory: android-compose
         run: |
           # tag 推送（v*）时用 tag 名；手动触发时读 build.gradle.kts 的 versionName
           if [ "${GITHUB_REF_TYPE}" = "tag" ]; then
@@ -53,7 +53,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           VER="${{ steps.ver.outputs.ver }}"
-          APK="android-compose/app/build/outputs/apk/release/app-release.apk"
+          APK="app/build/outputs/apk/release/app-release.apk"
           NOTES="自动构建自 GitHub Actions（Tuyin-Suite $VER）。更新日志详见仓库 RELEASE_NOTES.md"
           # 若该版本已存在 Release 则追加资产，否则创建
           if gh release view "$VER" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
