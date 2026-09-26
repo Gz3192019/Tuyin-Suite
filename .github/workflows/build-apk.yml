@@ -56,15 +56,15 @@ jobs:
         run: |
           VER="${{ steps.ver.outputs.ver }}"
           APK="app/build/outputs/apk/release/app-release.apk"
-          OUT="Tuyin-Suite-$VER.apk"
+          OUT="StegoTank-$VER.apk"
           cp "$APK" "$OUT"
-          NOTES="自动构建自 GitHub Actions（Tuyin-Suite $VER）。更新日志详见仓库 RELEASE_NOTES.md"
+          NOTES="自动构建自 GitHub Actions（StegoTank $VER）。更新日志详见仓库 RELEASE_NOTES.md"
           # 若该版本已存在 Release 则追加资产，否则创建
           if gh release view "$VER" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
             gh release upload "$VER" "$OUT" --repo "$GITHUB_REPOSITORY" --clobber
           else
             gh release create "$VER" "$OUT" \
               --repo "$GITHUB_REPOSITORY" \
-              --title "Tuyin-Suite $VER" \
+              --title "StegoTank $VER" \
               --notes "$NOTES"
           fi
