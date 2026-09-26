@@ -191,7 +191,8 @@ private val CrossActivityPredictive: NavTransition = navGraphicsTransition(
     opaqueDepth = 1f,
     motion = NavMotion(
         // commit 速率曲线：FastOutExtraSlowIn 快启动 → 极慢收尾，松手“滑行到站”的节奏感
-        commit = NavSettleSpec.Tween(durationMillis = 650, easing = FastOutExtraSlowIn),
+        // 时长 380ms：退场快，避免“点一级页时二级页还在拖尾”的可交互窗口
+        commit = NavSettleSpec.Tween(durationMillis = 380, easing = FastOutExtraSlowIn),
         cancel = NavSettleSpec.Spring(stiffness = 1500f),
     ),
     scrim = { scope ->
@@ -202,7 +203,7 @@ private val CrossActivityPredictive: NavTransition = navGraphicsTransition(
         when {
             // 返回提交：遮罩跟随二级卡片消失逐渐淡出（min 接续跟手值，避免跳变）
             settle?.phase == NavSettlePhase.Commit ->
-                min(revealed, (1f - settle.elapsedMillis / 650f).coerceIn(0f, 1f))
+                min(revealed, (1f - settle.elapsedMillis / 380f).coerceIn(0f, 1f))
             // 跟手：遮罩随一级页露出逐渐增强
             gesture != null -> revealed
             // 取消/回盖：遮罩随露出减少平滑回退
@@ -227,26 +228,29 @@ private val CrossActivityPredictive: NavTransition = navGraphicsTransition(
     if (depth <= 0f) {
         // ---- 顶页（正在退出）：d 0 → -1，缩放 + 手势方向位移（ReSukiSU 卡片风格）
         val progress = topProgress(depth)
-        if (scope.role == NavRole.Outgoing && committing && gesture != null) {
-            // commit 阶段：保持松手时的缩小值 + 从当前位置沿手势方向滑出 + 快速淡出（不复原放大）
-            val releaseProgress = (1f - gesture.progress).coerceAtLeast(0.01f)
-            val post = (1f - progress / releaseProgress).coerceIn(0f, 1f)
-            val releaseEasedProgress = shapedTopProgress(releaseProgress, gesture)
-            val committedScale =
-                CROSS_ACTIVITY_MIN_SCALE + (1f - CROSS_ACTIVITY_MIN_SCALE) * releaseEasedProgress
-            scaleX = snapScaleToPixelExtent(committedScale * bounce * (1f - 0.08f * post), widthPx)
+        if (scope.role == NavRole.Outgoing && committing) {
+            // commit 阶段：只由 depth 驱动（progress 1→0 单调），不读 gesture.progress 实时值。
+            // 旧实现用 (1 - gesture.progress) 算"松手缩小值"，但松手后 gesture.progress 会被
+            // 框架复位为 0 → committedScale 跳回 1.0 全尺寸 → 表现为"结束瞬间放大一帧"。
+            // scale 随 depth 快速缩小（快启动）；位移先接续松手位置再沿手势方向线性滑出；
+            // 淡出集中在滑出尾声（后 35% 时间），保证"缩小 + 滑出"过程全程可见、不直接消失。
+            val eased = progress
+            val t = (settle.elapsedMillis / 380f).coerceIn(0f, 1f)
+            val base = CROSS_ACTIVITY_MIN_SCALE + (1f - CROSS_ACTIVITY_MIN_SCALE) * eased
+            val settleShrink = 1f - 0.08f * (1f - eased)
+            scaleX = snapScaleToPixelExtent(base * settleShrink * bounce, widthPx)
             scaleY = scaleX
-            alpha = (1f - 5f * (settle.elapsedMillis / 650f)).coerceAtLeast(0f)
-            // 从松手时的跟手位置继续沿手势方向滑出
-            val releaseShift = sign * (1f - releaseEasedProgress) * followPx
-            var tx = releaseShift
-            tx += sign * post * widthPx * 0.35f
-            translationX = snapTranslationToPixelEdge(tx, scaleX, widthPx)
-            translationY = snapTranslationToPixelEdge(
-                crossActivityYShift(gesture, heightPx, scaleX, scope.density),
-                scaleY,
-                heightPx,
+            // 位移：接续松手跟手位置（(1-eased)*followPx 连续）→ 沿手势方向二次加速滑出
+            // （t² 越滑越快，终点 80% 屏宽，迅速离场；卡片大小此时已缩到位保持不变）
+            val slide = t * t * widthPx * 0.8f
+            translationX = snapTranslationToPixelEdge(
+                sign * (1f - eased) * followPx + sign * slide,
+                scaleX,
+                widthPx,
             )
+            // 淡出：最后 35% 时间从 1 → 0（滑出过程全程可见，尾部才淡）
+            alpha = ((1f - t) / 0.35f).coerceIn(0f, 1f)
+            translationY = 0f
         } else {
             // 跟手阶段：scale 1.0→0.68 居中缩小 + 卡片随手势方向水平位移（往左推往左移/往右推往右移）
             val easedProgress = shapedTopProgress(progress, gesture)
@@ -255,15 +259,10 @@ private val CrossActivityPredictive: NavTransition = navGraphicsTransition(
                 widthPx,
             )
             scaleY = scaleX
-            alpha = when {
-                scope.role == NavRole.Outgoing && gesture != null -> {
-                    val releaseProgress = (1f - gesture.progress).coerceAtLeast(0.01f)
-                    (1f - (1f - progress / releaseProgress).coerceIn(0f, 1f) * 3.5f)
-                        .coerceAtLeast(0f)
-                }
-                gesture != null -> 1f
-                else -> (progress / 0.2f).coerceIn(0f, 1f)
-            }
+            // 跟手阶段 alpha 恒 1：页面跟手全程可见、不透明。淡出完全交给 commit 尾部。
+            // （此前把 alpha 绑在 depth 上，系统触发返回（震动）瞬间深度快速跳到底，
+            //   alpha 随之归零 → 卡片“直接透明”；恒 1 后深度怎么跳都不透明。）
+            alpha = 1f
             translationX = snapTranslationToPixelEdge(
                 sign * (1f - easedProgress) * followPx,
                 scaleX,
