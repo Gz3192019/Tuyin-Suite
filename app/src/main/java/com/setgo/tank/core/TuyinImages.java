@@ -44,6 +44,27 @@ public final class TuyinImages {
         if (oriented != sampled) sampled.recycle();
         return capLongEdge(oriented, limit);
     }
+    /** 解码为保留 alpha 通道的 Bitmap（供幻影通道等 alpha 检测使用；不经过抹 alpha 的 ImageData 链路）。 */
+    public static Bitmap decodeKeepAlpha(Context ctx, Uri uri, int targetLong) throws IOException {
+        int limit = targetLong > 0 ? targetLong : MAX_LONG;
+        Bitmap sampled = decodeBitmapSampled(ctx, uri, limit);
+        if (sampled == null) throw new IOException("无法解码图片");
+        Bitmap oriented = applyExifRotation(ctx, uri, sampled);
+        if (oriented != sampled) sampled.recycle();
+        return capLongKeepAlpha(oriented, limit);
+    }
+
+    /** 仅缩放限长边并保留 alpha（与 capLongEdge 不同：不经过 bitmapToImageData）。 */
+    private static Bitmap capLongKeepAlpha(Bitmap src, int limit) {
+        int w = src.getWidth(), h = src.getHeight();
+        if (Math.max(w, h) <= limit) return src;
+        float s = Math.min((float) limit / w, (float) limit / h);
+        int nw = Math.max(1, Math.round(w * s));
+        int nh = Math.max(1, Math.round(h * s));
+        Bitmap scaled = Bitmap.createScaledBitmap(src, nw, nh, true);
+        if (scaled != src) src.recycle();
+        return scaled;
+    }
 
     /** 按目标长边采样解码：先只读尺寸，2 的幂采样使解码后长边 ≈ 目标，避免全尺寸位图驻留。 */
     public static Bitmap decodeBitmapSampled(Context ctx, Uri uri, int targetLong) throws IOException {
