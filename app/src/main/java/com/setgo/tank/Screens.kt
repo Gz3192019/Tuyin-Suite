@@ -124,7 +124,7 @@ private fun FeatureCard(item: FeatureItem, onClick: () -> Unit) {
     val title = when (item.id) {
         "rac" -> t("RAC 图隐", "RAC 圖隱", "RAC Stegano")
         "phantom" -> t("幻影坦克", "幻影坦克", "Phantom Tank")
-        "prism" -> t("光棱坦克", "光棱坦克", "Prism Tank")
+        "prism" -> t("光棱坦克", "光稜坦克", "Prism Tank")
         "arnold" -> t("图片混淆", "圖片混淆", "Image Scramble")
         else -> item.title
     }
@@ -230,7 +230,7 @@ fun AboutScreen() {
                 )
                 Spacer(Modifier.height(5.dp))
                 BasicText(
-                    text = "把一张图，藏进另一张图",
+                    text = t("把一张图，藏进另一张图", "把一張圖，藏進另一張圖", "Hide one image inside another"),
                     style = TextStyle(
                         color = SuSub,
                         fontSize = 13.sp
@@ -238,7 +238,7 @@ fun AboutScreen() {
                 )
                 Spacer(Modifier.height(5.dp))
                 BasicText(
-                    text = "版本 ${BuildConfig.VERSION_NAME}",
+                    text = t("版本 ", "版本 ", "Version ") + BuildConfig.VERSION_NAME,
                     style = TextStyle(
                         color = SuSub,
                         fontSize = 12.sp
@@ -257,80 +257,79 @@ fun AboutScreen() {
                     AvatarCache.ensureOnce(ctx, scope) { ok -> if (ok) avatarCached = true }
                 }
             }
-            AboutGroup("开发者") {
+            AboutGroup(t("开发者", "開發者", "Developer")) {
                 AboutRow(
                     title = "Gz3192019",
-                    subtitle = "StegoTank 作者 · Compose 重构与交互工作台",
+                    subtitle = t("StegoTank 作者 · Compose 重构与交互工作台", "StegoTank 作者 · Compose 重構與互動工作台", "StegoTank author · Compose rebuild & interaction lab"),
                     avatarModel = AvatarCache.cachedFile(ctx) ?: R.drawable.avatar_dev,
                     onClick = { openUrl("https://github.com/Gz3192019") }
                 )
             }
 
             // 图片功能 · 开源出处（头像 = 原作者 GitHub 头像）
-            AboutGroup("图片功能 · 开源出处") {
+            AboutGroup(t("图片功能 · 开源出处", "圖片功能 · 開源出處", "Feature sources")) {
                 AboutRow(
                     title = "RAC-Hide",
-                    subtitle = "DCT 鲁棒隐写 · 原作者 tuoPzf · rac-hide 仓库",
+                    subtitle = t("DCT 鲁棒隐写 · 原作者 tuoPzf · rac-hide 仓库", "DCT 魯棒隱寫 · 原作者 tuoPzf · rac-hide 倉庫", "DCT robust stego · by tuoPzf · rac-hide repo"),
                     avatarModel = R.drawable.avatar_rac,
                     onClick = { openUrl("https://github.com/tuoPzf/rac-hide") }
                 )
                 AboutRow(
                     title = "幻影坦克",
-                    subtitle = "wuyr/HideImageMaker · 黑白背景双显",
+                    subtitle = t("wuyr/HideImageMaker · 黑白背景双显", "wuyr/HideImageMaker · 黑白背景雙顯", "wuyr/HideImageMaker · white/black dual view"),
                     avatarModel = R.drawable.avatar_phantom,
                     onClick = { openUrl("https://github.com/wuyr/HideImageMaker") }
                 )
                 AboutRow(
                     title = "光棱坦克",
-                    subtitle = "Mirage_Decode · 亮度通道差分显影",
+                    subtitle = t("Mirage_Decode · 亮度通道差分显影", "Mirage_Decode · 亮度通道差分顯影", "Mirage_Decode · luminance channel reveal"),
                     avatarModel = R.drawable.avatar_prism,
                     onClick = { openUrl("https://github.com/TankFactory/Mirage_Decode") }
                 )
                 AboutRow(
                     title = "图片混淆",
-                    subtitle = "ObfuscationUtils · Arnold Cat Map 猫脸置乱",
+                    subtitle = t("ObfuscationUtils · Arnold Cat Map 猫脸置乱", "ObfuscationUtils · Arnold Cat Map 貓臉置亂", "ObfuscationUtils · Arnold cat-map shuffling"),
                     avatarModel = R.drawable.avatar_arnold,
                     onClick = { openUrl("https://github.com/2195517546/ObfuscationUtils") }
                 )
             }
 
             // 技术支持 · 开源（实际使用的库与框架；头像 = 组织 GitHub 头像）
-            AboutGroup("技术支持 · 开源") {
+            AboutGroup(t("技术支持 · 开源", "技術支援 · 開源", "Powered by")) {
                 AboutRow(
                     title = "miuix",
-                    subtitle = "compose-miuix-ui/miuix · MIUI 风格 Compose 组件库",
+                    subtitle = t("compose-miuix-ui/miuix · MIUI 风格 Compose 组件库", "compose-miuix-ui/miuix · MIUI 風格 Compose 元件庫", "compose-miuix-ui/miuix · MIUI-style Compose UI kit"),
                     avatarModel = R.drawable.avatar_miuix,
                     onClick = { openUrl("https://github.com/compose-miuix-ui/miuix") }
                 )
                 AboutRow(
                     title = "Jetpack Compose",
-                    subtitle = "Android 官方声明式 UI 框架",
+                    subtitle = t("Android 官方声明式 UI 框架", "Android 官方宣告式 UI 框架", "Android's official declarative UI toolkit"),
                     avatarModel = R.drawable.avatar_compose,
                     onClick = { openUrl("https://developer.android.com/jetpack/compose") }
                 )
                 AboutRow(
                     title = "Kotlin",
-                    subtitle = "JVM 现代编程语言",
+                    subtitle = t("JVM 现代编程语言", "JVM 現代程式語言", "A modern language for the JVM"),
                     avatarModel = R.drawable.avatar_kotlin,
                     onClick = { openUrl("https://kotlinlang.org") }
                 )
                 AboutRow(
                     title = "Coil",
-                    subtitle = "coil-kt/coil · Kotlin 图片加载库",
+                    subtitle = t("coil-kt/coil · Kotlin 图片加载库", "coil-kt/coil · Kotlin 圖片載入庫", "coil-kt/coil · Kotlin image loader"),
                     avatarModel = R.drawable.avatar_coil,
                     onClick = { openUrl("https://github.com/coil-kt/coil") }
                 )
             }
 
             // 关于本软件
-            AboutGroup("关于本软件") {
+            AboutGroup(t("关于本软件", "關於本軟體", "About this app")) {
                 BasicText(
-                    text = "图隐套件（StegoTank）是一个完全本地化的图片隐写工具箱：" +
-                        "RAC 图隐把一张图藏进另一张图（DCT 鲁棒隐写，可提取还原）；" +
-                        "幻影坦克让同一张图在亮/暗背景下呈现两幅画面；" +
-                        "光棱坦克通过亮度通道差分显影实现棱镜级光学变换隐写；" +
-                        "图片混淆用 Arnold 猫脸置乱把图像像素级打乱。\n\n" +
-                        "所有图片处理均在设备本地完成，不上传任何内容。",
+                    text = t(
+                        "图隐套件（StegoTank）是一个完全本地化的图片隐写工具箱：RAC 图隐把一张图藏进另一张图（DCT 鲁棒隐写，可提取还原）；幻影坦克让同一张图在亮/暗背景下呈现两幅画面；光棱坦克通过亮度通道差分显影实现棱镜级光学变换隐写；图片混淆用 Arnold 猫脸置乱把图像像素级打乱。\n\n所有图片处理均在设备本地完成，不上传任何内容。",
+                        "圖隱套件（StegoTank）是一個完全本地化的圖片隱寫工具箱：RAC 圖隱把一張圖藏進另一張圖（DCT 魯棒隱寫，可提取還原）；幻影坦克讓同一張圖在亮/暗背景下呈現兩幅畫面；光稜坦克透過亮度通道差分顯影實現稜鏡級光學變換隱寫；圖片混淆用 Arnold 貓臉置亂把圖像像素級打亂。\n\n所有圖片處理均在裝置本地完成，不上傳任何內容。",
+                        "StegoTank is a fully on-device image steganography toolbox: RAC hides one image inside another (DCT, extractable); Phantom Tank shows two views on bright/dark backgrounds; Prism Tank reveals via luminance channel; Image Scramble shuffles pixels with the Arnold cat map.\n\nAll processing happens locally on your device — nothing is uploaded."
+                    ),
                     style = TextStyle(
                         color = SuSub,
                         fontSize = 13.sp,
@@ -342,7 +341,7 @@ fun AboutScreen() {
 
             Spacer(Modifier.height(20.dp))
             BasicText(
-                text = "GPL-3.0-or-later · 仅供研究与版权水印等合法用途",
+                text = t("GPL-3.0-or-later · 仅供研究与版权水印等合法用途", "GPL-3.0-or-later · 僅供研究與版權浮水印等合法用途", "GPL-3.0-or-later · for research & legal watermark use"),
                 style = TextStyle(
                     color = SuSub,
                     fontSize = 12.sp
@@ -535,7 +534,7 @@ private fun FeaturePlaceholder(item: FeatureItem, onBack: () -> Unit) {
             )
             Spacer(Modifier.height(10.dp))
             BasicText(
-                text = "功能正在迁移中，敬请期待",
+                text = t("功能正在迁移中，敬请期待", "功能正在遷移中，敬請期待", "Feature migrating, stay tuned"),
                 style = TextStyle(
                     color = SuSub,
                     fontSize = 14.sp
