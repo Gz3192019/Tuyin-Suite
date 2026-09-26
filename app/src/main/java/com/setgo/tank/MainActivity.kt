@@ -100,6 +100,18 @@ val features = listOf(
         subtitle = "Arnold 置乱，图像像素级打乱",
         color = Color(0xFFFF7A00),
         avatarRes = R.drawable.avatar_arnold
+    ),
+    FeatureItem(
+        id = "lsb", title = "LSB 隐写", tag = "位",
+        subtitle = "把文字或文件藏进像素末位",
+        color = Color(0xFF00A3C4),
+        avatarRes = R.drawable.avatar_coil
+    ),
+    FeatureItem(
+        id = "detect", title = "隐写检测", tag = "检",
+        subtitle = "扫描图片是否疑似藏入数据",
+        color = Color(0xFFFF375F),
+        avatarRes = R.drawable.avatar_dev
     )
 )
 
@@ -242,12 +254,17 @@ fun TuyinSuiteApp() {
         entry<Route.Feature>(swipeDismiss = NavSwipeDirection.LeftToRight) { route ->
             FeatureScreen(
                 item = features.first { it.id == route.id },
-                onBack = { navigator.pop() }
+                onBack = { navigator.pop() },
+                onOpenHistory = { navigator.push(Route.History) }
             )
         }
         // 设置页：支持左→右跟手返回
         entry<Route.Settings>(swipeDismiss = NavSwipeDirection.LeftToRight) {
-            SettingsScreen(onBack = { navigator.pop() })
+            SettingsScreen(onBack = { navigator.pop() }, onOpenHistory = { navigator.push(Route.History) })
+        }
+        // 嵌入历史页：支持左→右跟手返回
+        entry<Route.History>(swipeDismiss = NavSwipeDirection.LeftToRight) {
+            HistoryScreen(onBack = { navigator.pop() })
         }
     }
 }
