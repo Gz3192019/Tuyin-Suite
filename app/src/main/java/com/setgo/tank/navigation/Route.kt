@@ -26,4 +26,9 @@ sealed interface Route : NavKey, Parcelable {
     @Parcelize
     @Serializable
     data object Settings : Route
+
+    /** 嵌入历史页 */
+    @Parcelize
+    @Serializable
+    data object History : Route
 }
