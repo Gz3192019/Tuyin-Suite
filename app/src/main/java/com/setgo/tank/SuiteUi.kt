@@ -52,7 +52,7 @@ import top.yukonga.miuix.kmp.basic.Slider
 import top.yukonga.miuix.kmp.basic.SliderDefaults
 import kotlin.math.roundToInt
 
-/** 全局明暗状态（AppTheme 联动 suiteThemeMode 更新） */
+/** 全局明暗状态：恒为浅色（深色模式写死，不做深色适配；SuBg/SuTitle 等暗色分支保留不触发） */
 var suiteDark by mutableStateOf(false)
 
 /** 套件公共配色（明暗联动：主题模式切换时背景/文字/卡片整体变色；背景极淡染主题色，接近纯白） */
@@ -123,14 +123,6 @@ internal fun t(zh: String, zhTw: String, en: String): String = when (suiteLang) 
 
 /** 二级页是否用系统返回键回上级（设置项，默认开启） */
 var suiteBackGesture by mutableStateOf(true)
-
-/** 主题模式：跟随系统 / 浅色 / 深色（联动 miuix ColorSchemeMode） */
-enum class SuiteThemeMode(val labelZh: String, val labelTw: String, val labelEn: String) {
-    System("跟随系统", "跟隨系統", "System"),
-    Light("浅色", "淺色", "Light"),
-    Dark("深色", "深色", "Dark")
-}
-var suiteThemeMode by mutableStateOf(SuiteThemeMode.System)
 
 /** 调色板样式（Material You 取色风格） */
 enum class SuitePaletteStyle(val label: String) {
@@ -505,11 +497,6 @@ internal fun loadThemePrefs(context: android.content.Context) {
     val sp = context.getSharedPreferences(THEME_PREFS, android.content.Context.MODE_PRIVATE)
     suiteMonet = sp.getBoolean("monet", false)
     suiteAccent = Color(sp.getInt("accent", 0xFF3482FF.toInt()))
-    suiteThemeMode = when (sp.getString("themeMode", "System")) {
-        "Light" -> SuiteThemeMode.Light
-        "Dark" -> SuiteThemeMode.Dark
-        else -> SuiteThemeMode.System
-    }
     suitePaletteStyle = when (sp.getString("palette", "TonalSpot")) {
         "Vibrant" -> SuitePaletteStyle.Vibrant
         "Expressive" -> SuitePaletteStyle.Expressive
@@ -532,7 +519,6 @@ internal fun saveThemePrefs(context: android.content.Context) {
     sp.edit()
         .putBoolean("monet", suiteMonet)
         .putInt("accent", suiteAccent.toArgb())
-        .putString("themeMode", when (suiteThemeMode) { SuiteThemeMode.Light -> "Light"; SuiteThemeMode.Dark -> "Dark"; else -> "System" })
         .putString("palette", suitePaletteStyle.name)
         .putBoolean("spec2025", suiteColorSpec == SuiteColorSpec.Spec2025)
         .putString("lang", suiteLang.name)
