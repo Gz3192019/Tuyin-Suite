@@ -35,6 +35,8 @@ jobs:
       - name: Build Release APK
         run: |
           chmod +x gradlew
+          # GitHub Actions 网络无法访问阿里云镜像（502），改用官方仓库；仅 CI 生效，不影响本地
+          sed -i '/aliyun\.com/d' settings.gradle.kts
           ./gradlew assembleRelease --no-daemon
 
       - name: Determine version
