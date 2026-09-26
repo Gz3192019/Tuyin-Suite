@@ -178,7 +178,7 @@ fun MirageTankScreen(onBack: () -> Unit) {
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             SuiteCard {
-                SuiteTileRow("幻", "原理", "同一张 PNG：白底显示表图，黑底显示里图（利用透明通道）") { }
+                SuiteTileRow("原理", "同一张 PNG：白底显示表图，黑底显示里图（利用透明通道）") { }
             }
             SuitePickCard(
                 title = "表图 · 白底显示",
@@ -195,7 +195,7 @@ fun MirageTankScreen(onBack: () -> Unit) {
                 onClick = { pickBack.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) }
             )
             SuiteCard {
-                SuiteTileRow("参", "参数调节", "参考 Mirage_Colored：混合权重、亮度（色阶缩放）与去色程度，全部实时预览") { }
+                SuiteTileRow("参数调节", "参考 Mirage_Colored：混合权重、亮度（色阶缩放）与去色程度，全部实时预览") { }
                 Spacer(Modifier.height(6.dp))
                 SuiteParamSlider("里图混合权重", backMix, 0, 100) { backMix = it; autoPreview() }
                 SuiteParamSlider("表图亮度", frontGain, 50, 200) { frontGain = it; autoPreview() }
@@ -219,7 +219,7 @@ fun MirageTankScreen(onBack: () -> Unit) {
                 }
             }
             SuiteCard {
-                SuiteTileRow("寸", "输出尺寸", "缩小输出可减少体积，画布按最大边等比缩放") { }
+                SuiteTileRow("输出尺寸", "缩小输出可减少体积，画布按最大边等比缩放") { }
                 Spacer(Modifier.height(8.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     SuiteSegButton("原尺寸", outScale == 1f, { outScale = 1f }, Modifier.weight(1f))
@@ -230,7 +230,7 @@ fun MirageTankScreen(onBack: () -> Unit) {
             SuiteMainButton("生成幻影坦克", enabled = frontBmp != null && backBmp != null) { generate() }
             if (resultBmp != null) {
                 SuiteCard {
-                    SuiteTileRow("预", "黑白背景预览", if (previewWhite) "当前：白色背景" else "当前：黑色背景") {
+                    SuiteTileRow("黑白背景预览", if (previewWhite) "当前：白色背景" else "当前：黑色背景") {
                         Box(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(10.dp))
