@@ -260,7 +260,7 @@ fun TuyinSuiteApp() {
         }
         // 设置页：支持左→右跟手返回
         entry<Route.Settings>(swipeDismiss = NavSwipeDirection.LeftToRight) {
-            SettingsScreen(onBack = { navigator.pop() }, onOpenHistory = { navigator.push(Route.History) })
+            SettingsScreen(onBack = { navigator.pop() })
         }
         // 嵌入历史页：支持左→右跟手返回
         entry<Route.History>(swipeDismiss = NavSwipeDirection.LeftToRight) {
