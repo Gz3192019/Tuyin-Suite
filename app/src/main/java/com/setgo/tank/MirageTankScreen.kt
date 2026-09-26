@@ -77,10 +77,10 @@ fun MirageTankScreen(onBack: () -> Unit) {
         if (granted) pendingSave?.invoke()
     }
     fun requestSave(bmp: Bitmap?, name: String) {
-        if (bmp == null) { status = "还没有可保存的图片"; return }
+        if (bmp == null) { status = t("还没有可保存的图片", "還沒有可保存的圖片", "Nothing to save yet"); return }
         val doSave: () -> Unit = { scope.launch {
             val ok = withContext(Dispatchers.Default) { TuyinImages.saveBitmapToGallery(context, bmp, name, "image/png", 100) }
-            status = if (ok) "已保存到相册" else "保存失败"
+            status = if (ok) t("已保存到相册", "已保存到相冊", "Saved to gallery") else t("保存失败", "保存失敗", "Save failed")
         } }
         if (Build.VERSION.SDK_INT <= 28 &&
             ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
@@ -96,7 +96,7 @@ fun MirageTankScreen(onBack: () -> Unit) {
             try {
                 val data = withContext(Dispatchers.Default) { TuyinImages.decodeUri(context, uri, 2048) }
                 frontBmp = TuyinImages.imageDataToBitmap(data)
-            } catch (e: Exception) { status = "读取表图失败：${e.message}" }
+            } catch (e: Exception) { status = t("读取表图失败：", "讀取表圖失敗：", "Failed to read cover: ") + e.message }
         }
     }
     val pickBack = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri: Uri? ->
@@ -104,15 +104,15 @@ fun MirageTankScreen(onBack: () -> Unit) {
             try {
                 val data = withContext(Dispatchers.Default) { TuyinImages.decodeUri(context, uri, 2048) }
                 backBmp = TuyinImages.imageDataToBitmap(data)
-            } catch (e: Exception) { status = "读取里图失败：${e.message}" }
+            } catch (e: Exception) { status = t("读取里图失败：", "讀取裡圖失敗：", "Failed to read inner: ") + e.message }
         }
     }
 
     fun generate() {
         val f = frontBmp; val b = backBmp
-        if (f == null || b == null) { status = "请先选择表图和里图"; return }
+        if (f == null || b == null) { status = t("请先选择表图和里图", "請先選擇表圖和裡圖", "Pick cover & inner first"); return }
         scope.launch {
-            status = "正在合成…"
+            status = t("正在合成…", "正在合成…", "Compositing…")
             try {
                 val out = withContext(Dispatchers.Default) {
                     SuiteEngines.mirageTank(
@@ -125,8 +125,8 @@ fun MirageTankScreen(onBack: () -> Unit) {
                 previewBmp = withContext(Dispatchers.Default) {
                     SuiteEngines.compositeOn(out, if (previewWhite) 0xFFFFFFFF.toInt() else 0xFF000000.toInt())
                 }
-                status = "合成完成，可用下方黑白背景预览效果"
-            } catch (e: Exception) { status = "合成失败：${e.message}" }
+                status = t("合成完成，可用下方黑白背景预览效果", "合成完成，可用下方黑白背景預覽效果", "Done. Preview on white/black background below")
+            } catch (e: Exception) { status = t("合成失败：", "合成失敗：", "Failed: ") + e.message }
         }
     }
 
@@ -158,8 +158,8 @@ fun MirageTankScreen(onBack: () -> Unit) {
                 previewBmp = withContext(Dispatchers.Default) {
                     SuiteEngines.compositeOn(out, if (previewWhite) 0xFFFFFFFF.toInt() else 0xFF000000.toInt())
                 }
-                status = "参数已更新（实时预览）"
-            } catch (e: Exception) { status = "预览失败：${e.message}" }
+                status = t("参数已更新（实时预览）", "參數已更新（即時預覽）", "Params updated (live preview)")
+            } catch (e: Exception) { status = t("预览失败：", "預覽失敗：", "Preview failed: ") + e.message }
         }
     }
 
@@ -178,59 +178,63 @@ fun MirageTankScreen(onBack: () -> Unit) {
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             SuiteCard {
-                SuiteTileRow("原理", "同一张 PNG：白底显示表图，黑底显示里图（利用透明通道）") { }
+                SuiteTileRow(t("原理", "原理", "How it works"),
+                    t("同一张 PNG：白底显示表图，黑底显示里图（利用透明通道）", "同一張 PNG：白底顯示表圖，黑底顯示裡圖（利用透明通道）", "One PNG: cover on white, inner on black (via alpha)")) { }
             }
             SuitePickCard(
-                title = "表图 · 白底显示",
-                hint = "点击选择白色背景下显示的图片",
+                title = t("表图 · 白底显示", "表圖 · 白底顯示", "Cover (white bg)"),
+                hint = t("点击选择白色背景下显示的图片", "點擊選擇白色背景下顯示的圖片", "Tap to pick the image shown on white"),
                 color = Color(0xFF3482FF),
                 bmp = frontBmp,
                 onClick = { pickFront.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) }
             )
             SuitePickCard(
-                title = "里图 · 黑底显示",
-                hint = "点击选择黑色背景下显示的图片",
+                title = t("里图 · 黑底显示", "裡圖 · 黑底顯示", "Inner (black bg)"),
+                hint = t("点击选择黑色背景下显示的图片", "點擊選擇黑色背景下顯示的圖片", "Tap to pick the image shown on black"),
                 color = Color(0xFF9C5BFF),
                 bmp = backBmp,
                 onClick = { pickBack.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) }
             )
             SuiteCard {
-                SuiteTileRow("参数调节", "参考 Mirage_Colored：混合权重、亮度（色阶缩放）与去色程度，全部实时预览") { }
+                SuiteTileRow(t("参数调节", "參數調節", "Adjustments"),
+                    t("参考 Mirage_Colored：混合权重、亮度（色阶缩放）与去色程度，全部实时预览", "參考 Mirage_Colored：混合權重、亮度（色階縮放）與去色程度，全部即時預覽", "From Mirage_Colored: mix, brightness (levels) & desaturation, live preview")) { }
                 Spacer(Modifier.height(6.dp))
-                SuiteParamSlider("里图混合权重", backMix, 0, 100) { backMix = it; autoPreview() }
-                SuiteParamSlider("表图亮度", frontGain, 50, 200) { frontGain = it; autoPreview() }
-                SuiteParamSlider("表图去色", frontDesat, 0, 100) { frontDesat = it; autoPreview() }
-                SuiteParamSlider("里图亮度", backGain, 50, 200) { backGain = it; autoPreview() }
-                SuiteParamSlider("里图去色", backDesat, 0, 100) { backDesat = it; autoPreview() }
+                SuiteParamSlider(t("里图混合权重", "裡圖混合權重", "Inner mix"), backMix, 0, 100) { backMix = it; autoPreview() }
+                SuiteParamSlider(t("表图亮度", "表圖亮度", "Cover brightness"), frontGain, 50, 200) { frontGain = it; autoPreview() }
+                SuiteParamSlider(t("表图去色", "表圖去色", "Cover desat"), frontDesat, 0, 100) { frontDesat = it; autoPreview() }
+                SuiteParamSlider(t("里图亮度", "裡圖亮度", "Inner brightness"), backGain, 50, 200) { backGain = it; autoPreview() }
+                SuiteParamSlider(t("里图去色", "裡圖去色", "Inner desat"), backDesat, 0, 100) { backDesat = it; autoPreview() }
                 Spacer(Modifier.height(4.dp))
                 // 表里互换
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     Box(Modifier.weight(1f)) {
-                        SuiteGhostButton("交换表里图", SuBlue) {
+                        SuiteGhostButton(t("交换表里图", "交換表裡圖", "Swap cover/inner"), SuBlue) {
                             val t = frontBmp; frontBmp = backBmp; backBmp = t
                             autoPreview()
                         }
                     }
                     Box(Modifier.weight(1f)) {
-                        SuiteGhostButton("重置图片", Color(0xFFE5484D)) {
+                        SuiteGhostButton(t("重置图片", "重置圖片", "Reset images"), Color(0xFFE5484D)) {
                             frontBmp = null; backBmp = null; resultBmp = null; previewBmp = null; status = ""
                         }
                     }
                 }
             }
             SuiteCard {
-                SuiteTileRow("输出尺寸", "缩小输出可减少体积，画布按最大边等比缩放") { }
+                SuiteTileRow(t("输出尺寸", "輸出尺寸", "Output size"),
+                    t("缩小输出可减少体积，画布按最大边等比缩放", "縮小輸出可減少體積，畫布按最大邊等比縮放", "Smaller output = smaller file; scales by longest edge")) { }
                 Spacer(Modifier.height(8.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    SuiteSegButton("原尺寸", outScale == 1f, { outScale = 1f }, Modifier.weight(1f))
+                    SuiteSegButton(t("原尺寸", "原尺寸", "Full"), outScale == 1f, { outScale = 1f }, Modifier.weight(1f))
                     SuiteSegButton("75%", outScale == 0.75f, { outScale = 0.75f }, Modifier.weight(1f))
                     SuiteSegButton("50%", outScale == 0.5f, { outScale = 0.5f }, Modifier.weight(1f))
                 }
             }
-            SuiteMainButton("生成幻影坦克", enabled = frontBmp != null && backBmp != null) { generate() }
+            SuiteMainButton(t("生成幻影坦克", "生成幻影坦克", "Generate Phantom"), enabled = frontBmp != null && backBmp != null) { generate() }
             if (resultBmp != null) {
                 SuiteCard {
-                    SuiteTileRow("黑白背景预览", if (previewWhite) "当前：白色背景" else "当前：黑色背景") {
+                    SuiteTileRow(t("黑白背景预览", "黑白背景預覽", "Black/white preview"),
+                        if (previewWhite) t("当前：白色背景", "當前：白色背景", "Now: white bg") else t("当前：黑色背景", "當前：黑色背景", "Now: black bg")) {
                         Box(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(10.dp))
@@ -238,7 +242,7 @@ fun MirageTankScreen(onBack: () -> Unit) {
                                 .clickable { previewWhite = !previewWhite; refreshPreview() }
                                 .padding(horizontal = 10.dp, vertical = 5.dp)
                         ) {
-                            BasicText(if (previewWhite) "切到黑底" else "切到白底", style = TextStyle(color = SuTitle, fontSize = 12.sp))
+                            BasicText(if (previewWhite) t("切到黑底", "切到黑底", "Switch to black") else t("切到白底", "切到白底", "Switch to white"), style = TextStyle(color = SuTitle, fontSize = 12.sp))
                         }
                     }
                     Spacer(Modifier.height(10.dp))
@@ -262,10 +266,10 @@ fun MirageTankScreen(onBack: () -> Unit) {
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     Box(Modifier.weight(1f)) {
-                        SuiteGhostButton("保存到相册", SuBlue) { requestSave(resultBmp, "mirage_tank.png") }
+                        SuiteGhostButton(t("保存到相册", "保存到相冊", "Save"), SuBlue) { requestSave(resultBmp, "mirage_tank.png") }
                     }
                     Box(Modifier.weight(1f)) {
-                        SuiteGhostButton("重置", Color(0xFFE5484D)) {
+                        SuiteGhostButton(t("重置", "重置", "Reset"), Color(0xFFE5484D)) {
                             resultBmp = null; previewBmp = null; frontBmp = null; backBmp = null; status = ""
                         }
                     }
