@@ -63,12 +63,15 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import top.yukonga.miuix.kmp.basic.Card
+import top.yukonga.miuix.kmp.basic.CardColors
 import java.io.ByteArrayOutputStream
 
 private val RacBg get() = SuBg
 private val RacTitle get() = SuTitle
 private val RacSub get() = SuSub
 private val RacBlue get() = suiteAccent
+/** accent 作前景文字/图标的安全色：accent 过浅（如瓷白）时退化深色，保证可读 */
+private val RacBlueFg get() = SuAccentFg
 private val RacRed = Color(0xFFE5484D)
 private val RacGreen = Color(0xFF00A854)
 private val RacSegBg get() = SuSegBg
@@ -407,7 +410,7 @@ fun RacScreen(onBack: () -> Unit) {
                     BasicText("取消", style = TextStyle(color = RacSub, fontSize = 15.sp, fontWeight = FontWeight.Bold), modifier = Modifier
                         .clickable { customDialog = false; enhanceIndex = enhancePrevIndex }.padding(12.dp))
                     Spacer(Modifier.width(8.dp))
-                    BasicText("确定", style = TextStyle(color = RacBlue, fontSize = 15.sp, fontWeight = FontWeight.Bold), modifier = Modifier
+                    BasicText("确定", style = TextStyle(color = RacBlueFg, fontSize = 15.sp, fontWeight = FontWeight.Bold), modifier = Modifier
                         .clickable {
                             val v = customInput.trim().toIntOrNull()
                             if (v != null && v in 64..8192) {
@@ -596,29 +599,20 @@ private fun RowScope.ModeTab(label: String, selected: Boolean, onClick: () -> Un
         contentAlignment = Alignment.Center
     ) {
         BasicText(label, style = TextStyle(
-            color = if (selected) RacBlue else RacSub,
+            color = if (selected) RacBlueFg else RacSub,
             fontSize = 15.sp,
             fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal
         ))
     }
 }
 
-/** 图标瓦片 + 双行文字行（对齐旧版 makeTileRow）。 */
+/** 标题 + 双行文字行（去掉单字方框头像，标题顶格）。 */
 @Composable
-private fun TileRow(tileChar: String, title: String, subtitle: String, trailing: (@Composable () -> Unit)? = null) {
+private fun TileRow(title: String, subtitle: String, trailing: (@Composable () -> Unit)? = null) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Box(
-            modifier = Modifier
-                .size(46.dp)
-                .background(Color(0xFF2B2B2B), RoundedCornerShape(12.dp)),
-            contentAlignment = Alignment.Center
-        ) {
-            BasicText(tileChar, style = TextStyle(color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold))
-        }
-        Spacer(Modifier.width(12.dp))
         Column(Modifier.weight(1f)) {
             BasicText(title, style = TextStyle(color = RacTitle, fontSize = 15.sp, fontWeight = FontWeight.Bold))
             Spacer(Modifier.height(2.dp))
@@ -631,7 +625,10 @@ private fun TileRow(tileChar: String, title: String, subtitle: String, trailing:
 /** 信息卡容器（对齐旧版 makeCard）。 */
 @Composable
 private fun InfoCard(content: @Composable () -> Unit) {
-    Card(modifier = Modifier.fillMaxWidth()) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardColors(SuCardTint, RacTitle)
+    ) {
         Column(Modifier.fillMaxWidth().padding(16.dp, 14.dp, 16.dp, 14.dp)) { content() }
     }
 }
@@ -648,7 +645,7 @@ private fun MainButton(text: String, enabled: Boolean, onClick: () -> Unit) {
             .padding(vertical = 14.dp),
         contentAlignment = Alignment.Center
     ) {
-        BasicText(text, style = TextStyle(color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.Bold))
+        BasicText(text, style = TextStyle(color = RacBlue.onAccentFg(), fontSize = 15.sp, fontWeight = FontWeight.Bold))
     }
 }
 
@@ -664,7 +661,7 @@ private fun GhostButton(text: String, accent: Color, onClick: () -> Unit) {
             .padding(vertical = 12.dp),
         contentAlignment = Alignment.Center
     ) {
-        BasicText(text, style = TextStyle(color = accent, fontSize = 13.sp, fontWeight = FontWeight.Bold))
+        BasicText(text, style = TextStyle(color = if (accent.isLight()) RacTitle else accent, fontSize = 13.sp, fontWeight = FontWeight.Bold))
     }
 }
 
@@ -675,7 +672,11 @@ private fun ImagePickCard(
     bmp: Bitmap?,
     onClick: () -> Unit
 ) {
-    Card(onClick = onClick, modifier = Modifier.fillMaxWidth()) {
+    Card(
+        onClick = onClick,
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardColors(SuCardTint, RacTitle)
+    ) {
         if (bmp == null) {
             Box(
                 modifier = Modifier
@@ -690,7 +691,7 @@ private fun ImagePickCard(
                             .background(color, RoundedCornerShape(28.dp)),
                         contentAlignment = Alignment.Center
                     ) {
-                        BasicText("＋", style = TextStyle(color = Color.White, fontSize = 26.sp, fontWeight = FontWeight.Bold))
+                        BasicText("＋", style = TextStyle(color = color.onAccentFg(), fontSize = 26.sp, fontWeight = FontWeight.Bold))
                     }
                     Spacer(Modifier.height(12.dp))
                     BasicText(title, style = TextStyle(color = RacTitle, fontSize = 16.sp, fontWeight = FontWeight.Bold))
@@ -719,7 +720,10 @@ private fun ImagePickCard(
 /** 结果展示卡：标题 + 图片区（高度跟随图片比例）。 */
 @Composable
 private fun ResultImageCard(title: String, bmp: Bitmap?, emptyHint: String) {
-    Card(modifier = Modifier.fillMaxWidth()) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardColors(SuCardTint, RacTitle)
+    ) {
         Column(Modifier.fillMaxWidth().padding(16.dp, 12.dp, 16.dp, 14.dp)) {
             BasicText(title, style = TextStyle(color = RacTitle, fontSize = 14.sp, fontWeight = FontWeight.Bold),
                 modifier = Modifier.fillMaxWidth())
@@ -788,6 +792,7 @@ private fun SelectField(
     onChange: (Int) -> Unit
 ) {
     var dialog by remember { mutableStateOf(false) }
+    val fieldFg = if (accent.isLight()) RacTitle else accent
     Box(
         modifier = Modifier
             .width(widthDp.dp)
@@ -799,7 +804,7 @@ private fun SelectField(
         contentAlignment = Alignment.Center
     ) {
         BasicText(labels.getOrElse(selectedIndex) { "" },
-            style = TextStyle(color = accent, fontSize = 13.sp, fontWeight = FontWeight.Bold))
+            style = TextStyle(color = fieldFg, fontSize = 13.sp, fontWeight = FontWeight.Bold))
     }
     if (dialog) {
         Dialog(onDismissRequest = { dialog = false }) {
@@ -830,11 +835,11 @@ private fun SelectField(
                                 .padding(3.dp),
                             contentAlignment = Alignment.Center
                         ) {
-                            if (sel) Box(Modifier.size(8.dp).clip(RoundedCornerShape(4.dp)).background(Color.White))
+                            if (sel) Box(Modifier.size(8.dp).clip(RoundedCornerShape(4.dp)).background(RacBlue.onAccentFg()))
                         }
                         Spacer(Modifier.width(12.dp))
                         BasicText(label, style = TextStyle(
-                            color = if (sel) RacBlue else RacTitle,
+                            color = if (sel) RacBlueFg else RacTitle,
                             fontSize = 14.sp,
                             fontWeight = if (sel) FontWeight.SemiBold else FontWeight.Normal
                         ))
@@ -899,8 +904,8 @@ private fun RacEmbedPanel(
 
     Spacer(Modifier.height(12.dp))
     InfoCard {
-        TileRow("容", "可用容量", "封面可隐藏的最大字节数，随参数实时更新") {
-            BasicText("≈ ${fmtKB(capacity)}", style = TextStyle(color = RacBlue, fontSize = 13.sp, fontWeight = FontWeight.Bold))
+        TileRow("可用容量", "封面可隐藏的最大字节数，随参数实时更新") {
+            BasicText("≈ ${fmtKB(capacity)}", style = TextStyle(color = RacBlueFg, fontSize = 13.sp, fontWeight = FontWeight.Bold))
         }
         Spacer(Modifier.height(12.dp))
         val occupied = if (payloadBytes > 0 && capacity > 0) {
@@ -924,7 +929,7 @@ private fun RacEmbedPanel(
 
     Spacer(Modifier.height(12.dp))
     InfoCard {
-        TileRow("增", "封面增强", "把封面长边重采样到目标尺寸，放大可提升隐藏图清晰度")
+        TileRow("封面增强", "把封面长边重采样到目标尺寸，放大可提升隐藏图清晰度")
         Spacer(Modifier.height(8.dp))
         Row(verticalAlignment = Alignment.CenterVertically) {
             BasicText("增强", style = TextStyle(color = RacSub, fontSize = 13.sp), modifier = Modifier.weight(1f))
@@ -934,7 +939,7 @@ private fun RacEmbedPanel(
 
     Spacer(Modifier.height(12.dp))
     InfoCard {
-        TileRow("质", "画质与容量", "画质与可嵌入容量的平衡，滑动即时重算容量") {
+        TileRow("画质与容量", "画质与可嵌入容量的平衡，滑动即时重算容量") {
             BasicText(tierName, style = TextStyle(color = RacTitle, fontSize = 13.sp, fontWeight = FontWeight.Bold))
         }
         Slider(
@@ -962,7 +967,7 @@ private fun RacEmbedPanel(
         contentAlignment = Alignment.Center
     ) {
         BasicText(if (showCustom) "收起参数" else "自定义参数",
-            style = TextStyle(color = RacBlue, fontSize = 13.sp, fontWeight = FontWeight.Bold))
+            style = TextStyle(color = RacBlueFg, fontSize = 13.sp, fontWeight = FontWeight.Bold))
     }
     if (showCustom) {
         Spacer(Modifier.height(4.dp))
@@ -1001,7 +1006,7 @@ private fun RacEmbedPanel(
             color = if (embedStatus.startsWith("嵌入失败") || embedStatus.startsWith("秘密图太大") ||
                 embedStatus.startsWith("封面太小") || embedStatus.startsWith("处理封面失败") ||
                 embedStatus.startsWith("重新处理封面失败") || embedStatus.startsWith("读取") ||
-                embedStatus.startsWith("保存失败")) RacRed else RacBlue,
+                embedStatus.startsWith("保存失败")) RacRed else RacBlueFg,
             fontSize = 12.sp), modifier = Modifier.fillMaxWidth())
     }
 
@@ -1010,7 +1015,7 @@ private fun RacEmbedPanel(
 
     Spacer(Modifier.height(12.dp))
     InfoCard {
-        TileRow("验", "通道模拟 · 验证鲁棒性", "模拟真实平台链路：缩放 → JPEG 重压缩 → 再提取")
+        TileRow("通道模拟 · 验证鲁棒性", "模拟真实平台链路：缩放 → JPEG 重压缩 → 再提取")
         Spacer(Modifier.height(10.dp))
         Row(verticalAlignment = Alignment.CenterVertically) {
             BasicText("缩放", style = TextStyle(color = RacSub, fontSize = 13.sp), modifier = Modifier.weight(1f))
@@ -1026,7 +1031,7 @@ private fun RacEmbedPanel(
         if (simStatus.isNotEmpty()) {
             Spacer(Modifier.height(10.dp))
             BasicText(simStatus, style = TextStyle(
-                color = if (simStatus.startsWith("提取失败") || simStatus.startsWith("模拟失败")) RacRed else RacBlue,
+                color = if (simStatus.startsWith("提取失败") || simStatus.startsWith("模拟失败")) RacRed else RacBlueFg,
                 fontSize = 13.sp), modifier = Modifier.fillMaxWidth())
         }
     }
@@ -1058,7 +1063,7 @@ private fun RacExtractPanel(
 
     Spacer(Modifier.height(12.dp))
     InfoCard {
-        TileRow("尺", "原图尺寸（可选）", "仅当空间标尺读取失败时用于手动恢复原始尺寸")
+        TileRow("原图尺寸（可选）", "仅当空间标尺读取失败时用于手动恢复原始尺寸")
         Spacer(Modifier.height(10.dp))
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             NumberField(manualW, onManualW, "宽", Modifier.weight(1f))
@@ -1091,7 +1096,7 @@ private fun RacExtractPanel(
         Spacer(Modifier.height(8.dp))
         BasicText(extractStatus, style = TextStyle(
             color = if (extractStatus.startsWith("提取失败") || extractStatus.startsWith("未找到") ||
-                extractStatus.startsWith("读取") || extractStatus.startsWith("保存失败")) RacRed else RacBlue,
+                extractStatus.startsWith("读取") || extractStatus.startsWith("保存失败")) RacRed else RacBlueFg,
             fontSize = 12.sp), modifier = Modifier.fillMaxWidth())
     }
 
