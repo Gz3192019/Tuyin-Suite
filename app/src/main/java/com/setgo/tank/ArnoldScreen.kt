@@ -152,7 +152,7 @@ fun ArnoldScreen(onBack: () -> Unit) {
                 rightLabel = t("还原", "還原", "Restore")
             )
             SuiteCard {
-                SuiteTileRow("混", t("原理", "原理", "How it works"), t("参考 ObfuscationUtils：多种可逆混淆算法，用相同算法与密钥即可无损还原", "參考 ObfuscationUtils：多種可逆混淆算法，用相同算法與密鑰即可無損還原", "From ObfuscationUtils: reversible scrambles; restore with the same algo & key")) { }
+                SuiteTileRow(t("原理", "原理", "How it works"), t("参考 ObfuscationUtils：多种可逆混淆算法，用相同算法与密钥即可无损还原", "參考 ObfuscationUtils：多種可逆混淆算法，用相同算法與密鑰即可無損還原", "From ObfuscationUtils: reversible scrambles; restore with the same algo & key")) { }
             }
             if (!mode) {
                 SuitePickCard(
@@ -163,7 +163,7 @@ fun ArnoldScreen(onBack: () -> Unit) {
                     onClick = { pickSrc.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) }
                 )
                 SuiteCard {
-                    SuiteTileRow("法", t("混淆算法", "混淆算法", "Algorithm"), t("算法与密钥需牢记，还原时保持一致", "算法與密鑰需牢記，還原時保持一致", "Remember the algo & key for restore")) { }
+                    SuiteTileRow(t("混淆算法", "混淆算法", "Algorithm"), t("算法与密钥需牢记，还原时保持一致", "算法與密鑰需牢記，還原時保持一致", "Remember the algo & key for restore")) { }
                     Spacer(Modifier.height(8.dp))
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         SuiteSegButton("番茄", algo == SuiteEngines.ScrambleAlgo.Tomato, { algo = SuiteEngines.ScrambleAlgo.Tomato }, Modifier.weight(1f))
@@ -182,7 +182,7 @@ fun ArnoldScreen(onBack: () -> Unit) {
                     BasicText(t("当前：", "當前：", "Now: ") + algo.label + " — " + t(algo.hint, algo.hint, algo.hint), style = TextStyle(color = SuSub, fontSize = 12.sp))
                 }
                 SuiteCard {
-                    SuiteTileRow("钥", t("密钥", "密鑰", "Key"), if (algo.needsKey) t("混淆与还原必须使用相同密钥", "混淆與還原必須使用相同密鑰", "Same key needed for restore") else t("排序算法无需密钥", "排序算法無需密鑰", "No key needed for Sort")) { }
+                    SuiteTileRow(t("密钥", "密鑰", "Key"), if (algo.needsKey) t("混淆与还原必须使用相同密钥", "混淆與還原必須使用相同密鑰", "Same key needed for restore") else t("排序算法无需密钥", "排序算法無需密鑰", "No key needed for Sort")) { }
                     Spacer(Modifier.height(8.dp))
                     Box(
                         modifier = Modifier
@@ -209,7 +209,7 @@ fun ArnoldScreen(onBack: () -> Unit) {
                     }
                 }
                 SuiteCard {
-                    SuiteTileRow("质", t("输出质量", "輸出質量", "Output quality"), t("保存为 JPEG，默认 0.95（参考小番茄混淆）", "保存為 JPEG，預設 0.95（參考小番茄混淆）", "Saved as JPEG, default 0.95")) { }
+                    SuiteTileRow(t("输出质量", "輸出質量", "Output quality"), t("保存为 JPEG，默认 0.95（参考小番茄混淆）", "保存為 JPEG，預設 0.95（參考小番茄混淆）", "Saved as JPEG, default 0.95")) { }
                     Spacer(Modifier.height(6.dp))
                     SuiteParamSlider(t("质量", "質量", "Quality"), quality, 50, 100) { quality = it }
                 }
@@ -223,7 +223,7 @@ fun ArnoldScreen(onBack: () -> Unit) {
                     onClick = { pickStego.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) }
                 )
                 SuiteCard {
-                    SuiteTileRow("法", t("混淆算法", "混淆算法", "Algorithm"), t("必须与混淆时选择相同的算法", "必須與混淆時選擇相同的算法", "Must match the algorithm used to scramble")) { }
+                    SuiteTileRow(t("混淆算法", "混淆算法", "Algorithm"), t("必须与混淆时选择相同的算法", "必須與混淆時選擇相同的算法", "Must match the algorithm used to scramble")) { }
                     Spacer(Modifier.height(8.dp))
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         SuiteSegButton("番茄", algo == SuiteEngines.ScrambleAlgo.Tomato, { algo = SuiteEngines.ScrambleAlgo.Tomato }, Modifier.weight(1f))
@@ -242,7 +242,7 @@ fun ArnoldScreen(onBack: () -> Unit) {
                     BasicText(t("当前：", "當前：", "Now: ") + algo.label, style = TextStyle(color = SuSub, fontSize = 12.sp))
                 }
                 SuiteCard {
-                    SuiteTileRow("钥", t("密钥", "密鑰", "Key"), t("必须与混淆时使用的密钥一致", "必須與混淆時使用的密鑰一致", "Must match the key used to scramble")) { }
+                    SuiteTileRow(t("密钥", "密鑰", "Key"), t("必须与混淆时使用的密钥一致", "必須與混淆時使用的密鑰一致", "Must match the key used to scramble")) { }
                     Spacer(Modifier.height(8.dp))
                     Box(
                         modifier = Modifier
@@ -269,7 +269,7 @@ fun ArnoldScreen(onBack: () -> Unit) {
             }
             if (resultBmp != null) {
                 SuiteCard {
-                    SuiteTileRow("果", if (!mode) t("混淆结果", "混淆結果", "Scrambled") else t("还原结果", "還原結果", "Restored"), t("点击图片可全屏查看", "點擊圖片可全屏查看", "Tap image to view full screen")) { }
+                    SuiteTileRow(if (!mode) t("混淆结果", "混淆結果", "Scrambled") else t("还原结果", "還原結果", "Restored"), t("点击图片可全屏查看", "點擊圖片可全屏查看", "Tap image to view full screen")) { }
                     Spacer(Modifier.height(10.dp))
                     Box(
                         modifier = Modifier
