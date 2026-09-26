@@ -93,7 +93,7 @@ fun ArnoldScreen(onBack: () -> Unit) {
             try {
                 val data = withContext(Dispatchers.Default) { TuyinImages.decodeUri(context, uri, 2048) }
                 srcBmp = TuyinImages.imageDataToBitmap(data)
-            } catch (e: Exception) { status = "读取图片失败：${e.message}" }
+            } catch (e: Exception) { status = t("读取图片失败：", "讀取圖片失敗：", "Failed to read image: ") + e.message }
         }
     }
     val pickStego = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri: Uri? ->
@@ -101,7 +101,7 @@ fun ArnoldScreen(onBack: () -> Unit) {
             try {
                 val data = withContext(Dispatchers.Default) { TuyinImages.decodeUri(context, uri, 2048) }
                 stegoBmp = TuyinImages.imageDataToBitmap(data)
-            } catch (e: Exception) { status = "读取混淆图失败：${e.message}" }
+            } catch (e: Exception) { status = t("读取混淆图失败：", "讀取混淆圖失敗：", "Failed to read scrambled: ") + e.message }
         }
     }
 
@@ -166,20 +166,20 @@ fun ArnoldScreen(onBack: () -> Unit) {
                     SuiteTileRow(t("混淆算法", "混淆算法", "Algorithm"), t("算法与密钥需牢记，还原时保持一致", "算法與密鑰需牢記，還原時保持一致", "Remember the algo & key for restore")) { }
                     Spacer(Modifier.height(8.dp))
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        SuiteSegButton("番茄", algo == SuiteEngines.ScrambleAlgo.Tomato, { algo = SuiteEngines.ScrambleAlgo.Tomato }, Modifier.weight(1f))
-                        SuiteSegButton("分块", algo == SuiteEngines.ScrambleAlgo.Block, { algo = SuiteEngines.ScrambleAlgo.Block }, Modifier.weight(1f))
-                        SuiteSegButton("行像素", algo == SuiteEngines.ScrambleAlgo.RowPixel, { algo = SuiteEngines.ScrambleAlgo.RowPixel }, Modifier.weight(1f))
-                        SuiteSegButton("像素级", algo == SuiteEngines.ScrambleAlgo.PerPixel, { algo = SuiteEngines.ScrambleAlgo.PerPixel }, Modifier.weight(1f))
+                        SuiteSegButton(t("番茄", "番茄", "Tomato"), algo == SuiteEngines.ScrambleAlgo.Tomato, { algo = SuiteEngines.ScrambleAlgo.Tomato }, Modifier.weight(1f))
+                        SuiteSegButton(t("分块", "分塊", "Block"), algo == SuiteEngines.ScrambleAlgo.Block, { algo = SuiteEngines.ScrambleAlgo.Block }, Modifier.weight(1f))
+                        SuiteSegButton(t("行像素", "行像素", "Row pixel"), algo == SuiteEngines.ScrambleAlgo.RowPixel, { algo = SuiteEngines.ScrambleAlgo.RowPixel }, Modifier.weight(1f))
+                        SuiteSegButton(t("像素级", "像素級", "Per pixel"), algo == SuiteEngines.ScrambleAlgo.PerPixel, { algo = SuiteEngines.ScrambleAlgo.PerPixel }, Modifier.weight(1f))
                     }
                     Spacer(Modifier.height(8.dp))
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        SuiteSegButton("行加密", algo == SuiteEngines.ScrambleAlgo.PicEncryptRow, { algo = SuiteEngines.ScrambleAlgo.PicEncryptRow }, Modifier.weight(1f))
-                        SuiteSegButton("行列", algo == SuiteEngines.ScrambleAlgo.PicEncryptRowColumn, { algo = SuiteEngines.ScrambleAlgo.PicEncryptRowColumn }, Modifier.weight(1f))
-                        SuiteSegButton("排序", algo == SuiteEngines.ScrambleAlgo.Sort, { algo = SuiteEngines.ScrambleAlgo.Sort }, Modifier.weight(1f))
-                        SuiteSegButton("随机", algo == SuiteEngines.ScrambleAlgo.Random, { algo = SuiteEngines.ScrambleAlgo.Random }, Modifier.weight(1f))
+                        SuiteSegButton(t("行加密", "行加密", "Row encrypt"), algo == SuiteEngines.ScrambleAlgo.PicEncryptRow, { algo = SuiteEngines.ScrambleAlgo.PicEncryptRow }, Modifier.weight(1f))
+                        SuiteSegButton(t("行列", "行列", "Row+col"), algo == SuiteEngines.ScrambleAlgo.PicEncryptRowColumn, { algo = SuiteEngines.ScrambleAlgo.PicEncryptRowColumn }, Modifier.weight(1f))
+                        SuiteSegButton(t("排序", "排序", "Sort"), algo == SuiteEngines.ScrambleAlgo.Sort, { algo = SuiteEngines.ScrambleAlgo.Sort }, Modifier.weight(1f))
+                        SuiteSegButton(t("随机", "隨機", "Random"), algo == SuiteEngines.ScrambleAlgo.Random, { algo = SuiteEngines.ScrambleAlgo.Random }, Modifier.weight(1f))
                     }
                     Spacer(Modifier.height(8.dp))
-                    BasicText(t("当前：", "當前：", "Now: ") + algo.label + " — " + t(algo.hint, algo.hint, algo.hint), style = TextStyle(color = SuSub, fontSize = 12.sp))
+                    BasicText(t("当前：", "當前：", "Now: ") + algoLabel(algo) + " — " + algoHint(algo), style = TextStyle(color = SuSub, fontSize = 12.sp))
                 }
                 SuiteCard {
                     SuiteTileRow(t("密钥", "密鑰", "Key"), if (algo.needsKey) t("混淆与还原必须使用相同密钥", "混淆與還原必須使用相同密鑰", "Same key needed for restore") else t("排序算法无需密钥", "排序算法無需密鑰", "No key needed for Sort")) { }
@@ -226,20 +226,20 @@ fun ArnoldScreen(onBack: () -> Unit) {
                     SuiteTileRow(t("混淆算法", "混淆算法", "Algorithm"), t("必须与混淆时选择相同的算法", "必須與混淆時選擇相同的算法", "Must match the algorithm used to scramble")) { }
                     Spacer(Modifier.height(8.dp))
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        SuiteSegButton("番茄", algo == SuiteEngines.ScrambleAlgo.Tomato, { algo = SuiteEngines.ScrambleAlgo.Tomato }, Modifier.weight(1f))
-                        SuiteSegButton("分块", algo == SuiteEngines.ScrambleAlgo.Block, { algo = SuiteEngines.ScrambleAlgo.Block }, Modifier.weight(1f))
-                        SuiteSegButton("行像素", algo == SuiteEngines.ScrambleAlgo.RowPixel, { algo = SuiteEngines.ScrambleAlgo.RowPixel }, Modifier.weight(1f))
-                        SuiteSegButton("像素级", algo == SuiteEngines.ScrambleAlgo.PerPixel, { algo = SuiteEngines.ScrambleAlgo.PerPixel }, Modifier.weight(1f))
+                        SuiteSegButton(t("番茄", "番茄", "Tomato"), algo == SuiteEngines.ScrambleAlgo.Tomato, { algo = SuiteEngines.ScrambleAlgo.Tomato }, Modifier.weight(1f))
+                        SuiteSegButton(t("分块", "分塊", "Block"), algo == SuiteEngines.ScrambleAlgo.Block, { algo = SuiteEngines.ScrambleAlgo.Block }, Modifier.weight(1f))
+                        SuiteSegButton(t("行像素", "行像素", "Row pixel"), algo == SuiteEngines.ScrambleAlgo.RowPixel, { algo = SuiteEngines.ScrambleAlgo.RowPixel }, Modifier.weight(1f))
+                        SuiteSegButton(t("像素级", "像素級", "Per pixel"), algo == SuiteEngines.ScrambleAlgo.PerPixel, { algo = SuiteEngines.ScrambleAlgo.PerPixel }, Modifier.weight(1f))
                     }
                     Spacer(Modifier.height(8.dp))
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        SuiteSegButton("行加密", algo == SuiteEngines.ScrambleAlgo.PicEncryptRow, { algo = SuiteEngines.ScrambleAlgo.PicEncryptRow }, Modifier.weight(1f))
-                        SuiteSegButton("行列", algo == SuiteEngines.ScrambleAlgo.PicEncryptRowColumn, { algo = SuiteEngines.ScrambleAlgo.PicEncryptRowColumn }, Modifier.weight(1f))
-                        SuiteSegButton("排序", algo == SuiteEngines.ScrambleAlgo.Sort, { algo = SuiteEngines.ScrambleAlgo.Sort }, Modifier.weight(1f))
-                        SuiteSegButton("随机", algo == SuiteEngines.ScrambleAlgo.Random, { algo = SuiteEngines.ScrambleAlgo.Random }, Modifier.weight(1f))
+                        SuiteSegButton(t("行加密", "行加密", "Row encrypt"), algo == SuiteEngines.ScrambleAlgo.PicEncryptRow, { algo = SuiteEngines.ScrambleAlgo.PicEncryptRow }, Modifier.weight(1f))
+                        SuiteSegButton(t("行列", "行列", "Row+col"), algo == SuiteEngines.ScrambleAlgo.PicEncryptRowColumn, { algo = SuiteEngines.ScrambleAlgo.PicEncryptRowColumn }, Modifier.weight(1f))
+                        SuiteSegButton(t("排序", "排序", "Sort"), algo == SuiteEngines.ScrambleAlgo.Sort, { algo = SuiteEngines.ScrambleAlgo.Sort }, Modifier.weight(1f))
+                        SuiteSegButton(t("随机", "隨機", "Random"), algo == SuiteEngines.ScrambleAlgo.Random, { algo = SuiteEngines.ScrambleAlgo.Random }, Modifier.weight(1f))
                     }
                     Spacer(Modifier.height(8.dp))
-                    BasicText(t("当前：", "當前：", "Now: ") + algo.label, style = TextStyle(color = SuSub, fontSize = 12.sp))
+                    BasicText(t("当前：", "當前：", "Now: ") + algoLabel(algo), style = TextStyle(color = SuSub, fontSize = 12.sp))
                 }
                 SuiteCard {
                     SuiteTileRow(t("密钥", "密鑰", "Key"), t("必须与混淆时使用的密钥一致", "必須與混淆時使用的密鑰一致", "Must match the key used to scramble")) { }
@@ -305,4 +305,29 @@ fun ArnoldScreen(onBack: () -> Unit) {
         }
     }
     SuiteImageViewer(bmp = previewBmp, onDismiss = { previewBmp = null })
+}
+
+/** 混淆算法名三语映射（数据结构的 label 为中文，显示层翻译） */
+@Composable
+private fun algoLabel(a: SuiteEngines.ScrambleAlgo): String = when (a) {
+    SuiteEngines.ScrambleAlgo.Tomato -> t("番茄", "番茄", "Tomato")
+    SuiteEngines.ScrambleAlgo.Block -> t("分块", "分塊", "Block")
+    SuiteEngines.ScrambleAlgo.RowPixel -> t("行像素", "行像素", "Row pixel")
+    SuiteEngines.ScrambleAlgo.PerPixel -> t("像素级", "像素級", "Per pixel")
+    SuiteEngines.ScrambleAlgo.PicEncryptRow -> t("行加密", "行加密", "Row encrypt")
+    SuiteEngines.ScrambleAlgo.PicEncryptRowColumn -> t("行列", "行列", "Row+col")
+    SuiteEngines.ScrambleAlgo.Sort -> t("排序", "排序", "Sort")
+    SuiteEngines.ScrambleAlgo.Random -> t("随机", "隨機", "Random")
+}
+
+@Composable
+private fun algoHint(a: SuiteEngines.ScrambleAlgo): String = when (a) {
+    SuiteEngines.ScrambleAlgo.Tomato -> t("数字密钥，全局像素置乱", "數字密鑰，全域像素置亂", "Numeric key; global pixel shuffle")
+    SuiteEngines.ScrambleAlgo.Block -> t("8×8 分块，块内按密钥打乱", "8×8 分塊，塊內按密鑰打亂", "8×8 blocks shuffled by key")
+    SuiteEngines.ScrambleAlgo.RowPixel -> t("逐行像素按密钥打乱", "逐行像素按密鑰打亂", "Row-wise pixels shuffled by key")
+    SuiteEngines.ScrambleAlgo.PerPixel -> t("逐像素通道交换 + 异或", "逐像素通道交換 + 異或", "Per-pixel channel swap + XOR")
+    SuiteEngines.ScrambleAlgo.PicEncryptRow -> t("浮点密钥，按行循环平移", "浮點密鑰，按行循環平移", "Float key; cyclic row shift")
+    SuiteEngines.ScrambleAlgo.PicEncryptRowColumn -> t("浮点密钥，行列双重平移", "浮點密鑰，行列雙重平移", "Float key; row+col dual shift")
+    SuiteEngines.ScrambleAlgo.Sort -> t("按亮度排序，无需密钥", "按亮度排序，無需密鑰", "Sort by luminance; no key")
+    SuiteEngines.ScrambleAlgo.Random -> t("种子随机置乱", "種子隨機置亂", "Seed-based random shuffle")
 }
