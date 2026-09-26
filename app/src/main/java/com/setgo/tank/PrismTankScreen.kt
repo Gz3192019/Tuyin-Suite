@@ -190,7 +190,7 @@ fun PrismTankScreen(onBack: () -> Unit) {
                 rightLabel = t("显影", "顯影", "Reveal")
             )
             SuiteCard {
-                SuiteTileRow("棱", t("原理", "原理", "How it works"), t("原版算法（Uyanide/Mirage_Decode）：里图按棋盘/间隔穿插到表图中压暗，显影时按阈值放大显现", "原版算法（Uyanide/Mirage_Decode）：裡圖按棋盤/間隔穿插到錶圖中壓暗，顯影時按閾值放大顯現", "Original Mirage_Decode: inner pixels interleaved & darkened; reveal amplifies below threshold")) { }
+                SuiteTileRow(t("原理", "原理", "How it works"), t("原版算法（Uyanide/Mirage_Decode）：里图按棋盘/间隔穿插到表图中压暗，显影时按阈值放大显现", "原版算法（Uyanide/Mirage_Decode）：裡圖按棋盤/間隔穿插到錶圖中壓暗，顯影時按閾值放大顯現", "Original Mirage_Decode: inner pixels interleaved & darkened; reveal amplifies below threshold")) { }
             }
             if (!mode) {
                 SuitePickCard(
@@ -208,7 +208,7 @@ fun PrismTankScreen(onBack: () -> Unit) {
                     onClick = { pickBack.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) }
                 )
                 SuiteCard {
-                    SuiteTileRow("摆", t("像素摆放", "像素擺放", "Layout"), t("里图像素如何穿插进表图（原版 method）", "裡圖像素如何穿插進錶圖（原版 method）", "How inner pixels interleave (original method)")) { }
+                    SuiteTileRow(t("像素摆放", "像素擺放", "Layout"), t("里图像素如何穿插进表图（原版 method）", "裡圖像素如何穿插進錶圖（原版 method）", "How inner pixels interleave (original method)")) { }
                     Spacer(Modifier.height(8.dp))
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         SuiteSegButton("棋盘格", method == PrismMethod.Chess, { method = PrismMethod.Chess }, Modifier.weight(1f))
@@ -225,7 +225,7 @@ fun PrismTankScreen(onBack: () -> Unit) {
                     BasicText(t("当前：", "當前：", "Now: ") + method.label + " — " + t(method.hint, method.hint, method.hint), style = TextStyle(color = SuSub, fontSize = 12.sp))
                 }
                 SuiteCard {
-                    SuiteTileRow("色", t("表图取色", "錶圖取色", "Cover color"), t("灰度模式表图更干净；彩色保留表图颜色", "灰度模式錶圖更乾淨；彩色保留錶圖顏色", "Gray keeps cover clean; color keeps cover colors")) { }
+                    SuiteTileRow(t("表图取色", "錶圖取色", "Cover color"), t("灰度模式表图更干净；彩色保留表图颜色", "灰度模式錶圖更乾淨；彩色保留錶圖顏色", "Gray keeps cover clean; color keeps cover colors")) { }
                     Spacer(Modifier.height(8.dp))
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         SuiteSegButton(t("灰度", "灰度", "Gray"), coverGray, { coverGray = true }, Modifier.weight(1f))
@@ -238,7 +238,7 @@ fun PrismTankScreen(onBack: () -> Unit) {
                     }
                 }
                 SuiteCard {
-                    SuiteTileRow("阈", t("生成阈值", "生成閾值", "Thresholds"), t("里图阈值控制里图压暗程度；表图阈值控制表图亮度偏移", "裡圖閾值控制裡圖壓暗程度；錶圖閾值控制錶圖亮度偏移", "Inner threshold = inner darkness; cover threshold = cover offset")) { }
+                    SuiteTileRow(t("生成阈值", "生成閾值", "Thresholds"), t("里图阈值控制里图压暗程度；表图阈值控制表图亮度偏移", "裡圖閾值控制裡圖壓暗程度；錶圖閾值控制錶圖亮度偏移", "Inner threshold = inner darkness; cover threshold = cover offset")) { }
                     Spacer(Modifier.height(6.dp))
                     SuiteParamSlider(t("里图阈值", "裡圖閾值", "Inner thr"), innerTh, 10, 120) { innerTh = it }
                     SuiteParamSlider(t("表图阈值", "錶圖閾值", "Cover thr"), coverTh, 20, 200) { coverTh = it }
@@ -246,7 +246,7 @@ fun PrismTankScreen(onBack: () -> Unit) {
                 SuiteMainButton(t("生成光棱坦克", "生成光棱坦克", "Generate"), enabled = frontBmp != null && backBmp != null) { runEncode() }
                 if (resultBmp != null) {
                     SuiteCard {
-                        SuiteTileRow("成", t("生成结果", "生成結果", "Result"), t("正常亮度看表图；下方为阈值显影预览", "正常亮度看錶圖；下方為閾值顯影預覽", "Cover visible normally; below is reveal preview")) { }
+                        SuiteTileRow(t("生成结果", "生成結果", "Result"), t("正常亮度看表图；下方为阈值显影预览", "正常亮度看錶圖；下方為閾值顯影預覽", "Cover visible normally; below is reveal preview")) { }
                         Spacer(Modifier.height(10.dp))
                         Box(
                             modifier = Modifier
@@ -306,7 +306,7 @@ fun PrismTankScreen(onBack: () -> Unit) {
                     onClick = { pickStego.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) }
                 )
                 SuiteCard {
-                    SuiteTileRow("阈", t("显影参数", "顯影參數", "Reveal params"), t("阈值分割：低于（正向）或高于（反向）阈值的像素放大显现里图", "閾值分割：低於（正向）或高於（反向）閾值的像素放大顯現裡圖", "Threshold split: below (fwd) / above (rev) is amplified")) { }
+                    SuiteTileRow(t("显影参数", "顯影參數", "Reveal params"), t("阈值分割：低于（正向）或高于（反向）阈值的像素放大显现里图", "閾值分割：低於（正向）或高於（反向）閾值的像素放大顯現裡圖", "Threshold split: below (fwd) / above (rev) is amplified")) { }
                     Spacer(Modifier.height(6.dp))
                     SuiteParamSlider(t("显影阈值", "顯影閾值", "Threshold"), revealTh, 30, 255) { revealTh = it }
                     Spacer(Modifier.height(4.dp))
@@ -316,7 +316,7 @@ fun PrismTankScreen(onBack: () -> Unit) {
                     }
                 }
                 SuiteCard {
-                    SuiteTileRow("处", t("表图区域处理", "錶圖區域處理", "Cover fill"), t("显影时非里图区域的填充方式", "顯影時非裡圖區域的填充方式", "How non-inner pixels are filled")) { }
+                    SuiteTileRow(t("表图区域处理", "錶圖區域處理", "Cover fill"), t("显影时非里图区域的填充方式", "顯影時非裡圖區域的填充方式", "How non-inner pixels are filled")) { }
                     Spacer(Modifier.height(8.dp))
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         SuiteSegButton("左上平均", coverProc == CoverProcess.LuAvg, { coverProc = CoverProcess.LuAvg }, Modifier.weight(1f))
@@ -335,7 +335,7 @@ fun PrismTankScreen(onBack: () -> Unit) {
                 SuiteMainButton(t("开始显影", "開始顯影", "Reveal"), enabled = stegoBmp != null) { runReveal() }
                 if (resultBmp != null) {
                     SuiteCard {
-                        SuiteTileRow("果", t("显影结果", "顯影結果", "Result"), t("点击图片可全屏查看", "點擊圖片可全屏查看", "Tap image to view full screen")) { }
+                        SuiteTileRow(t("显影结果", "顯影結果", "Result"), t("点击图片可全屏查看", "點擊圖片可全屏查看", "Tap image to view full screen")) { }
                         Spacer(Modifier.height(10.dp))
                         Box(
                             modifier = Modifier
