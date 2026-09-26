@@ -31,7 +31,7 @@ UI 组件基于 [compose-miuix-ui/miuix](https://github.com/compose-miuix-ui/miu
 - 包名：`com.setgo.tank`
 - 应用名：StegoTank
 - 当前正式版：`v1.0.4`（versionCode 64）
-- 更新日志见 [Releases](https://github.com/Gz3192019/Tuyin-Suite/releases)
+- 更新日志见 [Releases](https://github.com/Gz3192019/StegoTank/releases)
 
 ## 构建
 
