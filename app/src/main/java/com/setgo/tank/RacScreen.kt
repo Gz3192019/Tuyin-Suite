@@ -77,13 +77,41 @@ private val RacGreen = Color(0xFF00A854)
 private val RacSegBg get() = SuSegBg
 
 // 封面增强档位（对齐 web coverUpscale）
-private val ENHANCE_LABELS = listOf("不放大", "长边缩放到 2048", "长边缩放到 2560", "长边缩放到 3072", "长边缩放到 4096", "自定义")
 private val ENHANCE_VALUES = listOf(0, 2048, 2560, 3072, 4096, -1)
 // 通道模拟档位（对齐 web simScale / simQuality）
-private val SCALE_LABELS = listOf("不缩放（100%）", "缩放 90%", "缩放 80%", "缩放 70%", "缩放 60%", "缩放 50%")
 private val SCALE_VALUES = listOf(1.0, 0.9, 0.8, 0.7, 0.6, 0.5)
-private val QUALITY_LABELS = listOf("q100（无损）", "q90", "q80", "q70", "q60", "q50（很狠）", "q30")
 private val QUALITY_VALUES = listOf(100, 90, 80, 70, 60, 50, 30)
+
+@Composable
+private fun enhanceLabelList(): List<String> = listOf(
+    t("不放大", "不放大", "No upscale"),
+    t("长边缩放到 2048", "長邊縮放到 2048", "Long edge 2048"),
+    t("长边缩放到 2560", "長邊縮放到 2560", "Long edge 2560"),
+    t("长边缩放到 3072", "長邊縮放到 3072", "Long edge 3072"),
+    t("长边缩放到 4096", "長邊縮放到 4096", "Long edge 4096"),
+    t("自定义", "自訂", "Custom")
+)
+
+@Composable
+private fun scaleLabelList(): List<String> = listOf(
+    t("不缩放（100%）", "不縮放（100%）", "No scale (100%)"),
+    t("缩放 90%", "縮放 90%", "Scale 90%"),
+    t("缩放 80%", "縮放 80%", "Scale 80%"),
+    t("缩放 70%", "縮放 70%", "Scale 70%"),
+    t("缩放 60%", "縮放 60%", "Scale 60%"),
+    t("缩放 50%", "縮放 50%", "Scale 50%")
+)
+
+@Composable
+private fun qualityLabelList(): List<String> = listOf(
+    t("q100（无损）", "q100（無損）", "q100 (lossless)"),
+    t("q90", "q90", "q90"),
+    t("q80", "q80", "q80"),
+    t("q70", "q70", "q70"),
+    t("q60", "q60", "q60"),
+    t("q50（很狠）", "q50（很狠）", "q50 (harsh)"),
+    t("q30", "q30", "q30")
+)
 
 /** 封面增强放大护栏：目标总像素上限（≈4096×5850，避免超大位图 OOM）。 */
 private const val MAX_TARGET_PIXELS = 24_000_000L
@@ -94,6 +122,7 @@ fun RacScreen(onBack: () -> Unit) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val scrollState = rememberScrollState()
+    val enhanceLabels = enhanceLabelList()
 
     var mode by remember { mutableStateOf(true) }
     var coverUri by remember { mutableStateOf<Uri?>(null) }
@@ -171,7 +200,7 @@ fun RacScreen(onBack: () -> Unit) {
     fun loadCover(uri: Uri) {
         scope.launch {
             try {
-                embedStatus = "正在处理封面…"
+                embedStatus = t("正在处理封面…", "正在處理封面…", "Processing cover…")
                 val data = withContext(Dispatchers.Default) {
                     val raw = TuyinImages.decodeUri(context, uri, enhanceDecodeLong())
                     enhanceCover(raw)
@@ -181,7 +210,7 @@ fun RacScreen(onBack: () -> Unit) {
                 payloadBytes = 0
                 embedStatus = ""
             } catch (e: Exception) {
-                embedStatus = "处理封面失败：${friendlyError(e)}"
+                embedStatus = t("处理封面失败：", "處理封面失敗：", "Cover failed: ") + friendlyError(e)
             }
         }
     }
@@ -190,7 +219,7 @@ fun RacScreen(onBack: () -> Unit) {
         val uri = coverUri ?: return
         scope.launch {
             try {
-                embedStatus = "正在重新处理封面…"
+                embedStatus = t("正在重新处理封面…", "正在重新處理封面…", "Re-processing cover…")
                 val data = withContext(Dispatchers.Default) {
                     val raw = TuyinImages.decodeUri(context, uri, enhanceDecodeLong())
                     enhanceCover(raw)
@@ -200,19 +229,19 @@ fun RacScreen(onBack: () -> Unit) {
                 payloadBytes = 0
                 embedStatus = ""
             } catch (e: Exception) {
-                embedStatus = "重新处理封面失败：${friendlyError(e)}"
+                embedStatus = t("重新处理封面失败：", "重新處理封面失敗：", "Re-cover failed: ") + friendlyError(e)
             }
         }
     }
 
     fun doEmbed() {
-        val cover = coverData ?: run { embedStatus = "请先选择封面图和秘密图"; return }
-        val secret = secretData ?: run { embedStatus = "请先选择封面图和秘密图"; return }
+        val cover = coverData ?: run { embedStatus = t("请先选择封面图和秘密图", "請先選擇封面圖和祕密圖", "Pick a cover & secret first"); return }
+        val secret = secretData ?: run { embedStatus = t("请先选择封面图和秘密图", "請先選擇封面圖和祕密圖", "Pick a cover & secret first"); return }
         val opts = currentOptions()
         val cap = TuyinCore.capacityBytes(cover.width, cover.height, opts)
-        if (cap < 64) { embedStatus = "封面太小，无法嵌入"; return }
+        if (cap < 64) { embedStatus = t("封面太小，无法嵌入", "封面太小，無法嵌入", "Cover too small to embed"); return }
         embedWorking = true
-        embedStatus = "正在嵌入…"
+        embedStatus = t("正在嵌入…", "正在嵌入…", "Embedding…")
         embedProgress = 0f
         scope.launch {
             try {
@@ -230,11 +259,12 @@ fun RacScreen(onBack: () -> Unit) {
                 stegoResultBmp = stegoBmp
                 embedProgress = 1f
                 val w = stego.width; val h = stego.height
-                embedStatus = "嵌入完成 ${w}×${h}，可保存隐写图、切“提取”验证或下滑“通道模拟”验证鲁棒性"
+                embedStatus = t("嵌入完成 ", "嵌入完成 ", "Embedded ") + "${w}×${h}" +
+                    t("，可保存隐写图、切“提取”验证或下滑“通道模拟”验证鲁棒性", "，可保存隱寫圖、切「提取」驗證或下滑「通道模擬」驗證魯棒性", ". Save the stego, verify via Extract, or scroll to Channel Sim")
             } catch (e: EmbedTooBigException) {
-                embedStatus = "秘密图太大，塞不进这张封面（可把画质档位往左调）"
+                embedStatus = t("秘密图太大，塞不进这张封面（可把画质档位往左调）", "祕密圖太大，塞不進這張封面（可把畫質檔位往左調）", "Secret too big for this cover (try a lower quality tier)")
             } catch (e: Exception) {
-                embedStatus = "嵌入失败：${friendlyError(e)}"
+                embedStatus = t("嵌入失败：", "嵌入失敗：", "Embed failed: ") + friendlyError(e)
             } finally {
                 embedWorking = false
             }
@@ -242,13 +272,13 @@ fun RacScreen(onBack: () -> Unit) {
     }
 
     fun doExtract() {
-        val data = stegoData ?: run { extractStatus = "请先选择隐写图"; return }
+        val data = stegoData ?: run { extractStatus = t("请先选择隐写图", "請先選擇隱寫圖", "Pick a stego image first"); return }
         val w = manualW.trim().toIntOrNull() ?: 0
         val h = manualH.trim().toIntOrNull() ?: 0
-        if ((w >= 16) != (h >= 16)) { extractStatus = "宽和高需同时填写，或都留空自动检测封面尺寸"; return }
+        if ((w >= 16) != (h >= 16)) { extractStatus = t("宽和高需同时填写，或都留空自动检测封面尺寸", "寬和高需同時填寫，或都留空自動偵測封面尺寸", "Enter width & height together, or leave both empty for auto"); return }
         val manual = w >= 16 && h >= 16
         extractWorking = true
-        extractStatus = if (manual) "正在提取（按 ${w}×${h} 恢复）…" else "正在提取（自动检测封面尺寸）…"
+        extractStatus = if (manual) t("正在提取（按 ", "正在提取（按 ", "Extracting (") + "${w}×${h}" + t(" 恢复）…", " 恢復）…", "）…") else t("正在提取（自动检测封面尺寸）…", "正在提取（自動偵測封面尺寸）…", "Extracting (auto-detect)…")
         scope.launch {
             try {
                 val res = withContext(Dispatchers.Default) {
@@ -260,7 +290,7 @@ fun RacScreen(onBack: () -> Unit) {
                     }
                 }
                 if (res == null) {
-                    extractStatus = "未找到隐藏图片：图片可能不是图隐产物，或已被大幅修改"
+                    extractStatus = t("未找到隐藏图片：图片可能不是图隐产物，或已被大幅修改", "未找到隱藏圖片：圖片可能不是圖隱產物，或已被大幅修改", "No hidden image found: not a stego, or heavily modified")
                     return@launch
                 }
                 val bmp = withContext(Dispatchers.Default) {
@@ -268,10 +298,11 @@ fun RacScreen(onBack: () -> Unit) {
                     TuyinImages.applyExifRotationBytes(res.jpeg, raw)
                 }
                 extractResultBmp = bmp
-                extractStatus = "提取成功 ${bmp.width}×${bmp.height}" +
-                        (if (manual) "（已按 ${w}×${h} 恢复）" else "（已自动恢复封面尺寸）") + "，可保存到相册"
+                extractStatus = t("提取成功 ", "提取成功 ", "Extracted ") + "${bmp.width}×${bmp.height}" +
+                        (if (manual) t("（已按 ", "（已按 ", " (restored ") + "${w}×${h}" + t(" 恢复）", " 恢復）", ")") else t("（已自动恢复封面尺寸）", "（已自動恢復封面尺寸）", " (auto-restored cover size)")) +
+                        t("，可保存到相册", "，可保存到相冊", "; save to gallery")
             } catch (e: Exception) {
-                extractStatus = "提取失败：${friendlyError(e)}"
+                extractStatus = t("提取失败：", "提取失敗：", "Extract failed: ") + friendlyError(e)
             } finally {
                 extractWorking = false
             }
@@ -279,9 +310,9 @@ fun RacScreen(onBack: () -> Unit) {
     }
 
     fun doSimulate() {
-        val data = stegoData ?: run { simStatus = "请先在“嵌入”页生成隐写图，或在“提取”页选择隐写图"; return }
+        val data = stegoData ?: run { simStatus = t("请先在“嵌入”页生成隐写图，或在“提取”页选择隐写图", "請先在「嵌入」頁生成隱寫圖，或在「提取」頁選擇隱寫圖", "Generate a stego in Embed, or pick one in Extract first"); return }
         simWorking = true
-        simStatus = "模拟通道：缩放 → JPEG 重压缩 → 提取…"
+        simStatus = t("模拟通道：缩放 → JPEG 重压缩 → 提取…", "模擬通道：縮放 → JPEG 重壓縮 → 提取…", "Simulating: scale → JPEG recompress → extract…")
         scope.launch {
             try {
                 val (attacked, res) = withContext(Dispatchers.Default) {
@@ -311,13 +342,13 @@ fun RacScreen(onBack: () -> Unit) {
                         TuyinImages.applyExifRotationBytes(res.jpeg, raw)
                     }
                     simRecoveredBmp = rec
-                    simStatus = "提取成功：秘密图完好恢复，扛住了这个通道。"
+                    simStatus = t("提取成功：秘密图完好恢复，扛住了这个通道。", "提取成功：祕密圖完好恢復，扛住了這個通道。", "Recovered: the secret survived this channel.")
                 } else {
                     simRecoveredBmp = null
-                    simStatus = "提取失败：载荷已超出纠错预算。试试更轻的通道或更稳健的工作点。"
+                    simStatus = t("提取失败：载荷已超出纠错预算。试试更轻的通道或更稳健的工作点。", "提取失敗：載荷已超出糾錯預算。試試更輕的通道或更穩健的工作點。", "Recovery failed: payload exceeded ECC budget. Try a lighter channel.")
                 }
             } catch (e: Exception) {
-                simStatus = "模拟失败：${friendlyError(e)}"
+                simStatus = t("模拟失败：", "模擬失敗：", "Sim failed: ") + friendlyError(e)
             } finally {
                 simWorking = false
             }
@@ -352,7 +383,7 @@ fun RacScreen(onBack: () -> Unit) {
                     secretData = withContext(Dispatchers.Default) { TuyinImages.decodeUri(context, uri, TuyinImages.SECRET_MAX) }
                     secretBmp = TuyinImages.imageDataToBitmap(secretData!!)
                 } catch (e: Exception) {
-                    embedStatus = "读取秘密图失败：${friendlyError(e)}"
+                    embedStatus = t("读取秘密图失败：", "讀取祕密圖失敗：", "Failed to read secret: ") + friendlyError(e)
                 }
             }
         }
@@ -365,7 +396,7 @@ fun RacScreen(onBack: () -> Unit) {
                     stegoData = withContext(Dispatchers.Default) { TuyinImages.decodeUri(context, uri, 0) }
                     stegoBmp = TuyinImages.imageDataToBitmap(stegoData!!)
                 } catch (e: Exception) {
-                    extractStatus = "读取隐写图失败：${friendlyError(e)}"
+                    extractStatus = t("读取隐写图失败：", "讀取隱寫圖失敗：", "Failed to read stego: ") + friendlyError(e)
                 }
             }
         }
@@ -378,7 +409,7 @@ fun RacScreen(onBack: () -> Unit) {
         }
     }
     fun requestSave(bmp: Bitmap?, name: String, onResult: (Boolean) -> Unit) {
-        if (bmp == null) { embedStatus = "还没有可保存的图片"; return }
+        if (bmp == null) { embedStatus = t("还没有可保存的图片", "還沒有可保存的圖片", "Nothing to save yet"); return }
         val doSave: () -> Unit = { scope.launch {
             val ok = withContext(Dispatchers.Default) { TuyinImages.saveBitmapToGallery(context, bmp, name, "image/png", 100) }
             onResult(ok)
@@ -402,24 +433,24 @@ fun RacScreen(onBack: () -> Unit) {
                     .background(Color.White)
                     .padding(20.dp)
             ) {
-                BasicText("自定义封面长边", style = TextStyle(color = RacTitle, fontSize = 17.sp, fontWeight = FontWeight.SemiBold))
+                BasicText(t("自定义封面长边", "自訂封面長邊", "Custom cover long edge"), style = TextStyle(color = RacTitle, fontSize = 17.sp, fontWeight = FontWeight.SemiBold))
                 Spacer(Modifier.height(16.dp))
                 NumberField(value = customInput, onValue = { customInput = it }, hint = "64 ~ 8192", modifier = Modifier.fillMaxWidth())
                 Spacer(Modifier.height(16.dp))
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-                    BasicText("取消", style = TextStyle(color = RacSub, fontSize = 15.sp, fontWeight = FontWeight.Bold), modifier = Modifier
+                    BasicText(t("取消", "取消", "Cancel"), style = TextStyle(color = RacSub, fontSize = 15.sp, fontWeight = FontWeight.Bold), modifier = Modifier
                         .clickable { customDialog = false; enhanceIndex = enhancePrevIndex }.padding(12.dp))
                     Spacer(Modifier.width(8.dp))
-                    BasicText("确定", style = TextStyle(color = RacBlueFg, fontSize = 15.sp, fontWeight = FontWeight.Bold), modifier = Modifier
+                    BasicText(t("确定", "確定", "OK"), style = TextStyle(color = RacBlueFg, fontSize = 15.sp, fontWeight = FontWeight.Bold), modifier = Modifier
                         .clickable {
                             val v = customInput.trim().toIntOrNull()
                             if (v != null && v in 64..8192) {
                                 enhanceCustom = v
                                 enhancePrevIndex = enhanceIndex
-                                enhanceIndex = ENHANCE_LABELS.size - 1
+                                enhanceIndex = enhanceLabels.size - 1
                                 if (coverUri != null) reapplyCover()
                             } else {
-                                embedStatus = "请输入 64~8192 的数字"
+                                embedStatus = t("请输入 64~8192 的数字", "請輸入 64~8192 的數字", "Enter a number from 64 to 8192")
                             }
                             customDialog = false
                         }
@@ -478,7 +509,7 @@ fun RacScreen(onBack: () -> Unit) {
                     onEnhanceChange = { idx ->
                         val prev = enhanceIndex
                         enhanceIndex = idx
-                        if (idx == ENHANCE_LABELS.size - 1) {
+                        if (idx == enhanceLabels.size - 1) {
                             enhancePrevIndex = prev
                             customInput = if (enhanceCustom > 0) enhanceCustom.toString() else ""
                             customDialog = true
@@ -491,11 +522,11 @@ fun RacScreen(onBack: () -> Unit) {
                     onToggleCustom = { showCustom = !showCustom },
                     onPpbChange = { ppb = it }, onRepeatChange = { repeat = it }, onNsymChange = { nsym = it },
                     onEmbed = { doEmbed() },
-                    onSaveStego = { requestSave(stegoResultBmp ?: stegoBmp, "tuyin-stego") { ok -> embedStatus = if (ok) "已保存到相册" else "保存失败" } },
+                    onSaveStego = { requestSave(stegoResultBmp ?: stegoBmp, "tuyin-stego") { ok -> embedStatus = if (ok) t("已保存到相册", "已保存到相冊", "Saved to gallery") else t("保存失败", "保存失敗", "Save failed") } },
                     onResetEmbed = { resetEmbed() },
                     onScaleChange = { scaleIndex = it }, onQualityChange = { qualityIndex = it },
                     onSimulate = { doSimulate() },
-                    onSaveSim = { requestSave(simRecoveredBmp, "tuyin-recovered") { ok -> simStatus = if (ok) "已保存到相册" else "保存失败" } }
+                    onSaveSim = { requestSave(simRecoveredBmp, "tuyin-recovered") { ok -> simStatus = if (ok) t("已保存到相册", "已保存到相冊", "Saved to gallery") else t("保存失败", "保存失敗", "Save failed") } }
                 )
             } else {
                 RacExtractPanel(
@@ -506,7 +537,7 @@ fun RacScreen(onBack: () -> Unit) {
                     onPickStego = { pickStego.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) },
                     onManualW = { manualW = it }, onManualH = { manualH = it },
                     onExtract = { doExtract() },
-                    onSaveExtracted = { requestSave(extractResultBmp, "tuyin-extracted") { ok -> extractStatus = if (ok) "已保存到相册" else "保存失败" } },
+                    onSaveExtracted = { requestSave(extractResultBmp, "tuyin-extracted") { ok -> extractStatus = if (ok) t("已保存到相册", "已保存到相冊", "Saved to gallery") else t("保存失败", "保存失敗", "Save failed") } },
                     onResetExtract = { resetExtract() }
                 )
             }
@@ -518,7 +549,7 @@ fun RacScreen(onBack: () -> Unit) {
 private class EmbedTooBigException : Exception()
 
 private fun friendlyError(e: Throwable): String {
-    if (e is OutOfMemoryError) return "内存不足，请降低封面增强尺寸或画质档位"
+    if (e is OutOfMemoryError) return t("内存不足，请降低封面增强尺寸或画质档位", "記憶體不足，請降低封面增強尺寸或畫質檔位", "Out of memory — lower the cover upscale or quality")
     return e.message ?: e.toString()
 }
 
@@ -541,10 +572,10 @@ private fun sliderToTier(value: Int): IntArray {
 private fun tierName(progress: Int): String {
     val t = sliderToTier(progress)
     return when {
-        t[0] >= 5 -> "容量优先"
-        t[0] <= 1 && t[1] >= 3 -> "抗压缩"
-        t[0] <= 2 && t[2] >= 48 -> "均衡"
-        else -> "自定义 ${t[0]}/${t[1]}/${t[2]}"
+        t[0] >= 5 -> t("容量优先", "容量優先", "Capacity-first")
+        t[0] <= 1 && t[1] >= 3 -> t("抗压缩", "抗壓縮", "Compression-proof")
+        t[0] <= 2 && t[2] >= 48 -> t("均衡", "均衡", "Balanced")
+        else -> t("自定义 ", "自訂 ", "Custom ") + "${t[0]}/${t[1]}/${t[2]}"
     }
 }
 
@@ -582,8 +613,8 @@ private fun ModeSwitch(mode: Boolean, onMode: (Boolean) -> Unit) {
             .padding(4.dp),
         horizontalArrangement = Arrangement.spacedBy(4.dp)
     ) {
-        ModeTab("嵌入", selected = mode, onClick = { onMode(true) })
-        ModeTab("提取", selected = !mode, onClick = { onMode(false) })
+        ModeTab(t("嵌入", "嵌入", "Embed"), selected = mode, onClick = { onMode(true) })
+        ModeTab(t("提取", "提取", "Extract"), selected = !mode, onClick = { onMode(false) })
     }
 }
 
@@ -816,7 +847,7 @@ private fun SelectField(
                     .background(Color.White)
                     .padding(20.dp)
             ) {
-                BasicText("请选择", style = TextStyle(color = RacTitle, fontSize = 17.sp, fontWeight = FontWeight.SemiBold))
+                BasicText(t("请选择", "請選擇", "Select"), style = TextStyle(color = RacTitle, fontSize = 17.sp, fontWeight = FontWeight.SemiBold))
                 Spacer(Modifier.height(8.dp))
                 labels.forEachIndexed { i, label ->
                     val sel = i == selectedIndex
@@ -898,13 +929,13 @@ private fun RacEmbedPanel(
     onSimulate: () -> Unit, onSaveSim: () -> Unit
 ) {
     Spacer(Modifier.height(10.dp))
-    ImagePickCard("封面图 · 宿主", "点击选择要藏秘密图的封面", RacBlue, coverBmp, onPickCover)
+    ImagePickCard(t("封面图 · 宿主", "封面圖 · 宿主", "Cover · host"), t("点击选择要藏秘密图的封面", "點擊選擇要藏祕密圖的封面", "Tap to pick the cover image"), RacBlue, coverBmp, onPickCover)
     Spacer(Modifier.height(12.dp))
-    ImagePickCard("秘密图 · 被隐藏", "点击选择要藏进封面的图片", Color(0xFF9C5BFF), secretBmp, onPickSecret)
+    ImagePickCard(t("秘密图 · 被隐藏", "祕密圖 · 被隱藏", "Secret · hidden"), t("点击选择要藏进封面的图片", "點擊選擇要藏進封面的圖片", "Tap to pick the secret image"), Color(0xFF9C5BFF), secretBmp, onPickSecret)
 
     Spacer(Modifier.height(12.dp))
     InfoCard {
-        TileRow("可用容量", "封面可隐藏的最大字节数，随参数实时更新") {
+        TileRow(t("可用容量", "可用容量", "Capacity"), t("封面可隐藏的最大字节数，随参数实时更新", "封面可隱藏的最大位元組數，隨參數即時更新", "Max bytes the cover can hide; updates with params")) {
             BasicText("≈ ${fmtKB(capacity)}", style = TextStyle(color = RacBlueFg, fontSize = 13.sp, fontWeight = FontWeight.Bold))
         }
         Spacer(Modifier.height(12.dp))
@@ -920,8 +951,8 @@ private fun RacEmbedPanel(
         )
         Spacer(Modifier.height(8.dp))
         BasicText(
-            if (payloadBytes > 0 && capacity > 0) "实际载荷：${fmtKB(payloadBytes)} · 占用 ${occupied.toInt()}%"
-            else "实际载荷：尚未嵌入",
+            if (payloadBytes > 0 && capacity > 0) t("实际载荷：", "實際載荷：", "Payload: ") + "${fmtKB(payloadBytes)} · " + t("占用 ", "佔用 ", "uses ") + "${occupied.toInt()}%"
+            else t("实际载荷：尚未嵌入", "實際載荷：尚未嵌入", "Payload: none yet"),
             style = TextStyle(color = RacSub, fontSize = 12.sp),
             modifier = Modifier.padding(start = 58.dp)
         )
@@ -929,17 +960,17 @@ private fun RacEmbedPanel(
 
     Spacer(Modifier.height(12.dp))
     InfoCard {
-        TileRow("封面增强", "把封面长边重采样到目标尺寸，放大可提升隐藏图清晰度")
+        TileRow(t("封面增强", "封面增強", "Cover upscale"), t("把封面长边重采样到目标尺寸，放大可提升隐藏图清晰度", "把封面長邊重採樣到目標尺寸，放大可提升隱藏圖清晰度", "Resample the cover's long edge; upscaling sharpens the hidden image"))
         Spacer(Modifier.height(8.dp))
         Row(verticalAlignment = Alignment.CenterVertically) {
-            BasicText("增强", style = TextStyle(color = RacSub, fontSize = 13.sp), modifier = Modifier.weight(1f))
-            SelectField(ENHANCE_LABELS, enhanceIndex, onChange = onEnhanceChange)
+            BasicText(t("增强", "增強", "Upscale"), style = TextStyle(color = RacSub, fontSize = 13.sp), modifier = Modifier.weight(1f))
+            SelectField(enhanceLabelList(), enhanceIndex, onChange = onEnhanceChange)
         }
     }
 
     Spacer(Modifier.height(12.dp))
     InfoCard {
-        TileRow("画质与容量", "画质与可嵌入容量的平衡，滑动即时重算容量") {
+        TileRow(t("画质与容量", "畫質與容量", "Quality vs capacity"), t("画质与可嵌入容量的平衡，滑动即时重算容量", "畫質與可嵌入容量的平衡，滑動即時重算容量", "Trade-off slider; capacity recalculates live")) {
             BasicText(tierName, style = TextStyle(color = RacTitle, fontSize = 13.sp, fontWeight = FontWeight.Bold))
         }
         Slider(
@@ -966,26 +997,26 @@ private fun RacEmbedPanel(
             .padding(vertical = 13.dp),
         contentAlignment = Alignment.Center
     ) {
-        BasicText(if (showCustom) "收起参数" else "自定义参数",
+        BasicText(if (showCustom) t("收起参数", "收起參數", "Hide params") else t("自定义参数", "自訂參數", "Custom params"),
             style = TextStyle(color = RacBlueFg, fontSize = 13.sp, fontWeight = FontWeight.Bold))
     }
     if (showCustom) {
         Spacer(Modifier.height(4.dp))
         InfoCard {
-            ParamSliderRow("每块系数对 ppb", ppb, 1, 12, onPpbChange)
+            ParamSliderRow(t("每块系数对 ppb", "每塊係數對 ppb", "Coeff pairs ppb"), ppb, 1, 12, onPpbChange)
             Spacer(Modifier.height(4.dp))
-            ParamSliderRow("重复 repeat", repeat, 1, 5, onRepeatChange)
+            ParamSliderRow(t("重复 repeat", "重複 repeat", "Repeat"), repeat, 1, 5, onRepeatChange)
             Spacer(Modifier.height(4.dp))
-            ParamSliderRow("校验 nsym", nsym, 8, 64, onNsymChange)
+            ParamSliderRow(t("校验 nsym", "校驗 nsym", "Checksum nsym"), nsym, 8, 64, onNsymChange)
         }
     }
 
     Spacer(Modifier.height(16.dp))
-    MainButton("开始嵌入", enabled = coverBmp != null && secretBmp != null && !embedWorking, onClick = onEmbed)
+    MainButton(t("开始嵌入", "開始嵌入", "Embed"), enabled = coverBmp != null && secretBmp != null && !embedWorking, onClick = onEmbed)
     Spacer(Modifier.height(12.dp))
     Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-        Box(Modifier.weight(1f)) { GhostButton("保存到相册", RacBlue, onSaveStego) }
-        Box(Modifier.weight(1f)) { GhostButton("重置", RacSub, onResetEmbed) }
+        Box(Modifier.weight(1f)) { GhostButton(t("保存到相册", "保存到相冊", "Save"), RacBlue, onSaveStego) }
+        Box(Modifier.weight(1f)) { GhostButton(t("重置", "重置", "Reset"), RacSub, onResetEmbed) }
     }
     if (embedWorking) {
         Spacer(Modifier.height(14.dp))
@@ -1002,46 +1033,56 @@ private fun RacEmbedPanel(
     }
     if (embedStatus.isNotEmpty()) {
         Spacer(Modifier.height(8.dp))
+        val embedErrPrefixes = listOf(
+            t("嵌入失败", "嵌入失敗", "Embed failed"),
+            t("秘密图太大", "祕密圖太大", "Secret too big"),
+            t("封面太小", "封面太小", "Cover too small"),
+            t("处理封面失败", "處理封面失敗", "Cover failed"),
+            t("重新处理封面失败", "重新處理封面失敗", "Re-cover failed"),
+            t("读取", "讀取", "Failed to read"),
+            t("保存失败", "保存失敗", "Save failed")
+        )
         BasicText(embedStatus, style = TextStyle(
-            color = if (embedStatus.startsWith("嵌入失败") || embedStatus.startsWith("秘密图太大") ||
-                embedStatus.startsWith("封面太小") || embedStatus.startsWith("处理封面失败") ||
-                embedStatus.startsWith("重新处理封面失败") || embedStatus.startsWith("读取") ||
-                embedStatus.startsWith("保存失败")) RacRed else RacBlueFg,
+            color = if (embedErrPrefixes.any { embedStatus.startsWith(it) }) RacRed else RacBlueFg,
             fontSize = 12.sp), modifier = Modifier.fillMaxWidth())
     }
 
     Spacer(Modifier.height(12.dp))
-    ResultImageCard("隐写结果", stegoResultBmp, "嵌入完成后在这里显示")
+    ResultImageCard(t("隐写结果", "隱寫結果", "Stego result"), stegoResultBmp, t("嵌入完成后在这里显示", "嵌入完成後在這裡顯示", "The embedded image shows here"))
 
     Spacer(Modifier.height(12.dp))
     InfoCard {
-        TileRow("通道模拟 · 验证鲁棒性", "模拟真实平台链路：缩放 → JPEG 重压缩 → 再提取")
+        TileRow(t("通道模拟 · 验证鲁棒性", "通道模擬 · 驗證魯棒性", "Channel sim · robustness"), t("模拟真实平台链路：缩放 → JPEG 重压缩 → 再提取", "模擬真實平台鏈路：縮放 → JPEG 重壓縮 → 再提取", "Simulates a real pipeline: scale → JPEG recompress → extract"))
         Spacer(Modifier.height(10.dp))
         Row(verticalAlignment = Alignment.CenterVertically) {
-            BasicText("缩放", style = TextStyle(color = RacSub, fontSize = 13.sp), modifier = Modifier.weight(1f))
-            SelectField(SCALE_LABELS, scaleIndex, widthDp = 170, onChange = onScaleChange)
+            BasicText(t("缩放", "縮放", "Scale"), style = TextStyle(color = RacSub, fontSize = 13.sp), modifier = Modifier.weight(1f))
+            SelectField(scaleLabelList(), scaleIndex, widthDp = 170, onChange = onScaleChange)
         }
         Spacer(Modifier.height(8.dp))
         Row(verticalAlignment = Alignment.CenterVertically) {
-            BasicText("JPEG 重压缩质量", style = TextStyle(color = RacSub, fontSize = 13.sp), modifier = Modifier.weight(1f))
-            SelectField(QUALITY_LABELS, qualityIndex, widthDp = 170, onChange = onQualityChange)
+            BasicText(t("JPEG 重压缩质量", "JPEG 重壓縮品質", "JPEG quality"), style = TextStyle(color = RacSub, fontSize = 13.sp), modifier = Modifier.weight(1f))
+            SelectField(qualityLabelList(), qualityIndex, widthDp = 170, onChange = onQualityChange)
         }
         Spacer(Modifier.height(14.dp))
-        MainButton("模拟通道并提取", enabled = !simWorking && (stegoResultBmp != null), onClick = onSimulate)
+        MainButton(t("模拟通道并提取", "模擬通道並提取", "Simulate & extract"), enabled = !simWorking && (stegoResultBmp != null), onClick = onSimulate)
         if (simStatus.isNotEmpty()) {
             Spacer(Modifier.height(10.dp))
+            val simErrPrefixes = listOf(
+                t("提取失败", "提取失敗", "Recovery failed"),
+                t("模拟失败", "模擬失敗", "Sim failed")
+            )
             BasicText(simStatus, style = TextStyle(
-                color = if (simStatus.startsWith("提取失败") || simStatus.startsWith("模拟失败")) RacRed else RacBlueFg,
+                color = if (simErrPrefixes.any { simStatus.startsWith(it) }) RacRed else RacBlueFg,
                 fontSize = 13.sp), modifier = Modifier.fillMaxWidth())
         }
     }
     Spacer(Modifier.height(12.dp))
-    ResultImageCard("传输后的图像", simAttackedBmp, "模拟后在这里显示被通道处理过的图像")
+    ResultImageCard(t("传输后的图像", "傳輸後的圖像", "After channel"), simAttackedBmp, t("模拟后在这里显示被通道处理过的图像", "模擬後在這裡顯示被通道處理過的圖像", "The channel-processed image shows here"))
     Spacer(Modifier.height(12.dp))
-    ResultImageCard("提取结果 · 恢复的秘密图", simRecoveredBmp, "模拟提取成功后在这里显示")
+    ResultImageCard(t("提取结果 · 恢复的秘密图", "提取結果 · 恢復的祕密圖", "Extracted secret"), simRecoveredBmp, t("模拟提取成功后在这里显示", "模擬提取成功後在這裡顯示", "Recovered secret shows here"))
     if (simRecoveredBmp != null) {
         Spacer(Modifier.height(12.dp))
-        GhostButton("保存恢复图到相册", RacBlue, onSaveSim)
+        GhostButton(t("保存恢复图到相册", "保存恢復圖到相冊", "Save recovered"), RacBlue, onSaveSim)
     }
 }
 
@@ -1059,25 +1100,25 @@ private fun RacExtractPanel(
     onSaveExtracted: () -> Unit, onResetExtract: () -> Unit
 ) {
     Spacer(Modifier.height(10.dp))
-    ImagePickCard("隐写图 · 要解密的图片", "点击选择需要解密的图片", Color(0xFF00B96B), stegoBmp, onPickStego)
+    ImagePickCard(t("隐写图 · 要解密的图片", "隱寫圖 · 要解密的圖片", "Stego · to decrypt"), t("点击选择需要解密的图片", "點擊選擇需要解密的圖片", "Tap to pick the image to decrypt"), Color(0xFF00B96B), stegoBmp, onPickStego)
 
     Spacer(Modifier.height(12.dp))
     InfoCard {
-        TileRow("原图尺寸（可选）", "仅当空间标尺读取失败时用于手动恢复原始尺寸")
+        TileRow(t("原图尺寸（可选）", "原圖尺寸（可選）", "Original size (optional)"), t("仅当空间标尺读取失败时用于手动恢复原始尺寸", "僅當空間標尺讀取失敗時用於手動恢復原始尺寸", "Only needed when the size ruler fails; restores manually"))
         Spacer(Modifier.height(10.dp))
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            NumberField(manualW, onManualW, "宽", Modifier.weight(1f))
+            NumberField(manualW, onManualW, t("宽", "寬", "W"), Modifier.weight(1f))
             BasicText("×", style = TextStyle(color = RacSub, fontSize = 14.sp))
-            NumberField(manualH, onManualH, "高", Modifier.weight(1f))
+            NumberField(manualH, onManualH, t("高", "高", "H"), Modifier.weight(1f))
         }
     }
 
     Spacer(Modifier.height(16.dp))
-    MainButton("提取秘密图", enabled = stegoBmp != null && !extractWorking, onClick = onExtract)
+    MainButton(t("提取秘密图", "提取祕密圖", "Extract secret"), enabled = stegoBmp != null && !extractWorking, onClick = onExtract)
     Spacer(Modifier.height(12.dp))
     Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-        Box(Modifier.weight(1f)) { GhostButton("保存到相册", RacBlue, onSaveExtracted) }
-        Box(Modifier.weight(1f)) { GhostButton("重置", RacSub, onResetExtract) }
+        Box(Modifier.weight(1f)) { GhostButton(t("保存到相册", "保存到相冊", "Save"), RacBlue, onSaveExtracted) }
+        Box(Modifier.weight(1f)) { GhostButton(t("重置", "重置", "Reset"), RacSub, onResetExtract) }
     }
     if (extractWorking) {
         Spacer(Modifier.height(14.dp))
@@ -1089,17 +1130,22 @@ private fun RacExtractPanel(
             drawStopIndicator = {}
         )
         Spacer(Modifier.height(6.dp))
-        BasicText("正在提取…", style = TextStyle(color = RacSub, fontSize = 11.sp),
+        BasicText(t("正在提取…", "正在提取…", "Extracting…"), style = TextStyle(color = RacSub, fontSize = 11.sp),
             modifier = Modifier.fillMaxWidth())
     }
     if (extractStatus.isNotEmpty()) {
         Spacer(Modifier.height(8.dp))
+        val extractErrPrefixes = listOf(
+            t("提取失败", "提取失敗", "Extract failed"),
+            t("未找到", "未找到", "No hidden"),
+            t("读取", "讀取", "Failed to read"),
+            t("保存失败", "保存失敗", "Save failed")
+        )
         BasicText(extractStatus, style = TextStyle(
-            color = if (extractStatus.startsWith("提取失败") || extractStatus.startsWith("未找到") ||
-                extractStatus.startsWith("读取") || extractStatus.startsWith("保存失败")) RacRed else RacBlueFg,
+            color = if (extractErrPrefixes.any { extractStatus.startsWith(it) }) RacRed else RacBlueFg,
             fontSize = 12.sp), modifier = Modifier.fillMaxWidth())
     }
 
     Spacer(Modifier.height(12.dp))
-    ResultImageCard("提取结果", extractResultBmp, "提取成功后在这里显示")
+    ResultImageCard(t("提取结果", "提取結果", "Extracted"), extractResultBmp, t("提取成功后在这里显示", "提取成功後在這裡顯示", "The extracted image shows here"))
 }
