@@ -44,7 +44,7 @@ import androidx.compose.ui.unit.sp
 
 /** 设置页（v0.1.32 宽松版）：主题颜色（莫奈取色 + 色块，联动全 App 卡片）/ 预返回 / 语言 */
 @Composable
-fun SettingsScreen(onBack: () -> Unit) {
+fun SettingsScreen(onBack: () -> Unit, onOpenHistory: () -> Unit) {
     val scrollState = rememberScrollState()
 
     Column(modifier = Modifier.fillMaxSize().background(SuBg)) {
@@ -157,6 +157,24 @@ fun SettingsScreen(onBack: () -> Unit) {
                             }
                         }
                     }
+                }
+            }
+
+            // ===== 嵌入历史 =====
+            SuiteCard {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(10.dp))
+                        .clickable(onClick = onOpenHistory)
+                        .padding(vertical = 2.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(Modifier.weight(1f)) {
+                        BasicText(t("嵌入历史", "嵌入歷史", "History"), style = TextStyle(color = SuTitle, fontSize = 14.sp, fontWeight = FontWeight.Medium))
+                        BasicText(t("查看 LSB 嵌入记录", "查看 LSB 嵌入記錄", "View LSB embed records"), style = TextStyle(color = SuSub, fontSize = 12.sp))
+                    }
+                    BasicText("›", style = TextStyle(color = SuSub, fontSize = 22.sp), modifier = Modifier.padding(start = 8.dp))
                 }
             }
 
