@@ -102,7 +102,7 @@ fun PrismTankScreen(onBack: () -> Unit) {
             try {
                 val data = withContext(Dispatchers.Default) { TuyinImages.decodeUri(context, uri, 2048) }
                 frontBmp = TuyinImages.imageDataToBitmap(data)
-            } catch (e: Exception) { status = t("读取表图失败：", "讀取錶圖失敗：", "Failed to read cover: ") + e.message }
+            } catch (e: Exception) { status = t("读取表图失败：", "讀取表圖失敗：", "Failed to read cover: ") + e.message }
         }
     }
     val pickBack = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri: Uri? ->
@@ -124,7 +124,7 @@ fun PrismTankScreen(onBack: () -> Unit) {
 
     fun runEncode() {
         val f = frontBmp; val b = backBmp
-        if (f == null || b == null) { status = t("请先选择表图和里图", "請先選擇錶圖和裡圖", "Pick cover & inner first"); return }
+        if (f == null || b == null) { status = t("请先选择表图和里图", "請先選擇表圖和裡圖", "Pick cover & inner first"); return }
         scope.launch {
             status = t("正在生成…", "正在生成…", "Generating…")
             try {
@@ -171,7 +171,7 @@ fun PrismTankScreen(onBack: () -> Unit) {
 
     Column(modifier = Modifier.fillMaxSize().background(SuBg)) {
         SuiteFadingTopBar(
-            title = t("光棱坦克", "光棱坦克", "Prism Tank"),
+            title = t("光棱坦克", "光稜坦克", "Prism Tank"),
             scrollOffset = scrollState.value.toFloat(),
             onBack = onBack
         )
@@ -190,11 +190,11 @@ fun PrismTankScreen(onBack: () -> Unit) {
                 rightLabel = t("显影", "顯影", "Reveal")
             )
             SuiteCard {
-                SuiteTileRow(t("原理", "原理", "How it works"), t("原版算法（Uyanide/Mirage_Decode）：里图按棋盘/间隔穿插到表图中压暗，显影时按阈值放大显现", "原版算法（Uyanide/Mirage_Decode）：裡圖按棋盤/間隔穿插到錶圖中壓暗，顯影時按閾值放大顯現", "Original Mirage_Decode: inner pixels interleaved & darkened; reveal amplifies below threshold")) { }
+                SuiteTileRow(t("原理", "原理", "How it works"), t("原版算法（Uyanide/Mirage_Decode）：里图按棋盘/间隔穿插到表图中压暗，显影时按阈值放大显现", "原版算法（Uyanide/Mirage_Decode）：裡圖按棋盤/間隔穿插到表圖中壓暗，顯影時按閾值放大顯現", "Original Mirage_Decode: inner pixels interleaved & darkened; reveal amplifies below threshold")) { }
             }
             if (!mode) {
                 SuitePickCard(
-                    title = t("表图 · 正常显示", "錶圖 · 正常顯示", "Cover (normal view)"),
+                    title = t("表图 · 正常显示", "表圖 · 正常顯示", "Cover (normal view)"),
                     hint = t("点击选择正常情况下显示的图片", "點擊選擇正常情況下顯示的圖片", "Tap to pick the cover image"),
                     color = Color(0xFF00B96B),
                     bmp = frontBmp,
@@ -208,24 +208,24 @@ fun PrismTankScreen(onBack: () -> Unit) {
                     onClick = { pickBack.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) }
                 )
                 SuiteCard {
-                    SuiteTileRow(t("像素摆放", "像素擺放", "Layout"), t("里图像素如何穿插进表图（原版 method）", "裡圖像素如何穿插進錶圖（原版 method）", "How inner pixels interleave (original method)")) { }
+                    SuiteTileRow(t("像素摆放", "像素擺放", "Layout"), t("里图像素如何穿插进表图（原版 method）", "裡圖像素如何穿插進表圖（原版 method）", "How inner pixels interleave (original method)")) { }
                     Spacer(Modifier.height(8.dp))
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        SuiteSegButton("棋盘格", method == PrismMethod.Chess, { method = PrismMethod.Chess }, Modifier.weight(1f))
-                        SuiteSegButton("隔 2", method == PrismMethod.Gap2, { method = PrismMethod.Gap2 }, Modifier.weight(1f))
-                        SuiteSegButton("隔 3", method == PrismMethod.Gap3, { method = PrismMethod.Gap3 }, Modifier.weight(1f))
+                        SuiteSegButton(t("棋盘格", "棋盤格", "Chess"), method == PrismMethod.Chess, { method = PrismMethod.Chess }, Modifier.weight(1f))
+                        SuiteSegButton(t("隔 2", "隔 2", "Gap 2"), method == PrismMethod.Gap2, { method = PrismMethod.Gap2 }, Modifier.weight(1f))
+                        SuiteSegButton(t("隔 3", "隔 3", "Gap 3"), method == PrismMethod.Gap3, { method = PrismMethod.Gap3 }, Modifier.weight(1f))
                     }
                     Spacer(Modifier.height(8.dp))
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        SuiteSegButton("隔 5", method == PrismMethod.Gap5, { method = PrismMethod.Gap5 }, Modifier.weight(1f))
-                        SuiteSegButton("奇偶列", method == PrismMethod.Col1, { method = PrismMethod.Col1 }, Modifier.weight(1f))
-                        SuiteSegButton("奇偶行", method == PrismMethod.Row1, { method = PrismMethod.Row1 }, Modifier.weight(1f))
+                        SuiteSegButton(t("隔 5", "隔 5", "Gap 5"), method == PrismMethod.Gap5, { method = PrismMethod.Gap5 }, Modifier.weight(1f))
+                        SuiteSegButton(t("奇偶列", "奇偶列", "Col parity"), method == PrismMethod.Col1, { method = PrismMethod.Col1 }, Modifier.weight(1f))
+                        SuiteSegButton(t("奇偶行", "奇偶行", "Row parity"), method == PrismMethod.Row1, { method = PrismMethod.Row1 }, Modifier.weight(1f))
                     }
                     Spacer(Modifier.height(8.dp))
-                    BasicText(t("当前：", "當前：", "Now: ") + method.label + " — " + t(method.hint, method.hint, method.hint), style = TextStyle(color = SuSub, fontSize = 12.sp))
+                    BasicText(t("当前：", "當前：", "Now: ") + methodLabel(method) + " — " + methodHint(method), style = TextStyle(color = SuSub, fontSize = 12.sp))
                 }
                 SuiteCard {
-                    SuiteTileRow(t("表图取色", "錶圖取色", "Cover color"), t("灰度模式表图更干净；彩色保留表图颜色", "灰度模式錶圖更乾淨；彩色保留錶圖顏色", "Gray keeps cover clean; color keeps cover colors")) { }
+                    SuiteTileRow(t("表图取色", "表圖取色", "Cover color"), t("灰度模式表图更干净；彩色保留表图颜色", "灰度模式表圖更乾淨；彩色保留表圖顏色", "Gray keeps cover clean; color keeps cover colors")) { }
                     Spacer(Modifier.height(8.dp))
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         SuiteSegButton(t("灰度", "灰度", "Gray"), coverGray, { coverGray = true }, Modifier.weight(1f))
@@ -238,15 +238,15 @@ fun PrismTankScreen(onBack: () -> Unit) {
                     }
                 }
                 SuiteCard {
-                    SuiteTileRow(t("生成阈值", "生成閾值", "Thresholds"), t("里图阈值控制里图压暗程度；表图阈值控制表图亮度偏移", "裡圖閾值控制裡圖壓暗程度；錶圖閾值控制錶圖亮度偏移", "Inner threshold = inner darkness; cover threshold = cover offset")) { }
+                    SuiteTileRow(t("生成阈值", "生成閾值", "Thresholds"), t("里图阈值控制里图压暗程度；表图阈值控制表图亮度偏移", "裡圖閾值控制裡圖壓暗程度；表圖閾值控制表圖亮度偏移", "Inner threshold = inner darkness; cover threshold = cover offset")) { }
                     Spacer(Modifier.height(6.dp))
                     SuiteParamSlider(t("里图阈值", "裡圖閾值", "Inner thr"), innerTh, 10, 120) { innerTh = it }
-                    SuiteParamSlider(t("表图阈值", "錶圖閾值", "Cover thr"), coverTh, 20, 200) { coverTh = it }
+                    SuiteParamSlider(t("表图阈值", "表圖閾值", "Cover thr"), coverTh, 20, 200) { coverTh = it }
                 }
-                SuiteMainButton(t("生成光棱坦克", "生成光棱坦克", "Generate"), enabled = frontBmp != null && backBmp != null) { runEncode() }
+                SuiteMainButton(t("生成光棱坦克", "生成光稜坦克", "Generate"), enabled = frontBmp != null && backBmp != null) { runEncode() }
                 if (resultBmp != null) {
                     SuiteCard {
-                        SuiteTileRow(t("生成结果", "生成結果", "Result"), t("正常亮度看表图；下方为阈值显影预览", "正常亮度看錶圖；下方為閾值顯影預覽", "Cover visible normally; below is reveal preview")) { }
+                        SuiteTileRow(t("生成结果", "生成結果", "Result"), t("正常亮度看表图；下方为阈值显影预览", "正常亮度看表圖；下方為閾值顯影預覽", "Cover visible normally; below is reveal preview")) { }
                         Spacer(Modifier.height(10.dp))
                         Box(
                             modifier = Modifier
@@ -299,14 +299,14 @@ fun PrismTankScreen(onBack: () -> Unit) {
                 }
             } else {
                 SuitePickCard(
-                    title = t("选择光棱坦克图", "選擇光棱坦克圖", "Pick prism image"),
+                    title = t("选择光棱坦克图", "選擇光稜坦克圖", "Pick prism image"),
                     hint = t("点击选择需要显影的图片", "點擊選擇需要顯影的圖片", "Tap to pick the image to reveal"),
                     color = Color(0xFF00B96B),
                     bmp = stegoBmp,
                     onClick = { pickStego.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) }
                 )
                 SuiteCard {
-                    SuiteTileRow(t("显影参数", "顯影參數", "Reveal params"), t("阈值分割：低于（正向）或高于（反向）阈值的像素放大显现里图", "閾值分割：低於（正向）或高於（反向）閾值的像素放大顯現裡圖", "Threshold split: below (fwd) / above (rev) is amplified")) { }
+                    SuiteTileRow(t("显影参数", "顯影參數", "Reveal params"), t("阈值分割：低于（正向）或高于（反向）阈值的像素放大显现里图", "閾值分割：低於（正向）或高於（反向）閾值的像素放大顯現裡圖", "Pixels below (fwd) / above (rev) the threshold are amplified")) { }
                     Spacer(Modifier.height(6.dp))
                     SuiteParamSlider(t("显影阈值", "顯影閾值", "Threshold"), revealTh, 30, 255) { revealTh = it }
                     Spacer(Modifier.height(4.dp))
@@ -316,21 +316,21 @@ fun PrismTankScreen(onBack: () -> Unit) {
                     }
                 }
                 SuiteCard {
-                    SuiteTileRow(t("表图区域处理", "錶圖區域處理", "Cover fill"), t("显影时非里图区域的填充方式", "顯影時非裡圖區域的填充方式", "How non-inner pixels are filled")) { }
+                    SuiteTileRow(t("表图区域处理", "表圖區域處理", "Cover fill"), t("显影时非里图区域的填充方式", "顯影時非裡圖區域的填充方式", "How non-inner pixels are filled")) { }
                     Spacer(Modifier.height(8.dp))
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        SuiteSegButton("左上平均", coverProc == CoverProcess.LuAvg, { coverProc = CoverProcess.LuAvg }, Modifier.weight(1f))
-                        SuiteSegButton("复制左侧", coverProc == CoverProcess.LCopy, { coverProc = CoverProcess.LCopy }, Modifier.weight(1f))
-                        SuiteSegButton("复制上方", coverProc == CoverProcess.UCopy, { coverProc = CoverProcess.UCopy }, Modifier.weight(1f))
+                        SuiteSegButton(t("左上平均", "左上平均", "Avg top-left"), coverProc == CoverProcess.LuAvg, { coverProc = CoverProcess.LuAvg }, Modifier.weight(1f))
+                        SuiteSegButton(t("复制左侧", "複製左側", "Copy left"), coverProc == CoverProcess.LCopy, { coverProc = CoverProcess.LCopy }, Modifier.weight(1f))
+                        SuiteSegButton(t("复制上方", "複製上方", "Copy top"), coverProc == CoverProcess.UCopy, { coverProc = CoverProcess.UCopy }, Modifier.weight(1f))
                     }
                     Spacer(Modifier.height(8.dp))
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        SuiteSegButton("透明", coverProc == CoverProcess.Trans, { coverProc = CoverProcess.Trans }, Modifier.weight(1f))
-                        SuiteSegButton("黑色", coverProc == CoverProcess.Black, { coverProc = CoverProcess.Black }, Modifier.weight(1f))
-                        SuiteSegButton("白色", coverProc == CoverProcess.White, { coverProc = CoverProcess.White }, Modifier.weight(1f))
+                        SuiteSegButton(t("透明", "透明", "Transparent"), coverProc == CoverProcess.Trans, { coverProc = CoverProcess.Trans }, Modifier.weight(1f))
+                        SuiteSegButton(t("黑色", "黑色", "Black"), coverProc == CoverProcess.Black, { coverProc = CoverProcess.Black }, Modifier.weight(1f))
+                        SuiteSegButton(t("白色", "白色", "White"), coverProc == CoverProcess.White, { coverProc = CoverProcess.White }, Modifier.weight(1f))
                     }
                     Spacer(Modifier.height(8.dp))
-                    BasicText(t("当前：", "當前：", "Now: ") + coverProc.label + " — " + t(coverProc.hint, coverProc.hint, coverProc.hint), style = TextStyle(color = SuSub, fontSize = 12.sp))
+                    BasicText(t("当前：", "當前：", "Now: ") + coverLabel(coverProc) + " — " + coverHint(coverProc), style = TextStyle(color = SuSub, fontSize = 12.sp))
                 }
                 SuiteMainButton(t("开始显影", "開始顯影", "Reveal"), enabled = stegoBmp != null) { runReveal() }
                 if (resultBmp != null) {
@@ -372,4 +372,45 @@ fun PrismTankScreen(onBack: () -> Unit) {
         }
     }
     SuiteImageViewer(bmp = fullBmp, onDismiss = { fullBmp = null })
+}
+
+/** 摆放方式名三语映射（数据结构的 label/hint 为中文，显示层翻译） */
+@Composable
+private fun methodLabel(m: PrismMethod): String = when (m) {
+    PrismMethod.Chess -> t("棋盘格", "棋盤格", "Chess")
+    PrismMethod.Gap2 -> t("隔 2", "隔 2", "Gap 2")
+    PrismMethod.Gap3 -> t("隔 3", "隔 3", "Gap 3")
+    PrismMethod.Gap5 -> t("隔 5", "隔 5", "Gap 5")
+    PrismMethod.Col1 -> t("奇偶列", "奇偶列", "Col parity")
+    PrismMethod.Row1 -> t("奇偶行", "奇偶行", "Row parity")
+}
+
+@Composable
+private fun methodHint(m: PrismMethod): String = when (m) {
+    PrismMethod.Chess -> t("斜线棋盘，隔一像素放里图", "斜線棋盤，隔一像素放裡圖", "Diagonal chessboard; inner every other pixel")
+    PrismMethod.Gap2 -> t("斜线隔 2 像素放里图", "斜線隔 2 像素放裡圖", "Diagonal; inner every 2 pixels")
+    PrismMethod.Gap3 -> t("斜线隔 3 像素放里图", "斜線隔 3 像素放裡圖", "Diagonal; inner every 3 pixels")
+    PrismMethod.Gap5 -> t("斜线隔 5 像素放里图", "斜線隔 5 像素放裡圖", "Diagonal; inner every 5 pixels")
+    PrismMethod.Col1 -> t("按列交替放里图", "按列交替放裡圖", "Inner on alternating columns")
+    PrismMethod.Row1 -> t("按行交替放里图", "按行交替放裡圖", "Inner on alternating rows")
+}
+
+@Composable
+private fun coverLabel(c: CoverProcess): String = when (c) {
+    CoverProcess.LuAvg -> t("左上平均", "左上平均", "Avg top-left")
+    CoverProcess.LCopy -> t("复制左侧", "複製左側", "Copy left")
+    CoverProcess.UCopy -> t("复制上方", "複製上方", "Copy top")
+    CoverProcess.Trans -> t("透明", "透明", "Transparent")
+    CoverProcess.Black -> t("黑色", "黑色", "Black")
+    CoverProcess.White -> t("白色", "白色", "White")
+}
+
+@Composable
+private fun coverHint(c: CoverProcess): String = when (c) {
+    CoverProcess.LuAvg -> t("用左上邻居均值填充", "用左上鄰居均值填充", "Fill with top-left neighbor average")
+    CoverProcess.LCopy -> t("复制左边像素", "複製左邊像素", "Copy left pixel")
+    CoverProcess.UCopy -> t("复制上方像素", "複製上方像素", "Copy pixel above")
+    CoverProcess.Trans -> t("置为透明（保留原图）", "置為透明（保留原圖）", "Make transparent (keep original)")
+    CoverProcess.Black -> t("置为黑色", "置為黑色", "Fill black")
+    CoverProcess.White -> t("置为白色", "置為白色", "Fill white")
 }
